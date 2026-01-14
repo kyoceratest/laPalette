@@ -244,6 +244,7 @@
   </style>
 </head>
 <body>
+  <script defer src="config.js"></script>
   <script defer src="header.js"></script>
   <div class="container">
     <h1 id="orders-title">
@@ -364,7 +365,8 @@
 
     async function loadOrderMessages(orderId) {
       try {
-        const res = await fetch('http://localhost:3002/api/orders/' + orderId + '/messages?t=' + Date.now());
+        const base = (window.API_BASE || '').replace(/\/$/, '');
+        const res = await fetch(base + '/api/orders/' + orderId + '/messages?t=' + Date.now());
         if (!res.ok) throw new Error('HTTP ' + res.status);
         return await res.json();
       } catch (err) {
@@ -407,7 +409,8 @@
             // for this order so that hasNewForStaff becomes false on refresh.
             try {
               if (currentMessageOrder && currentMessageOrder.orderId) {
-                await fetch('http://localhost:3002/api/orders/' + currentMessageOrder.orderId + '/read/staff', {
+                const base = (window.API_BASE || '').replace(/\/$/, '');
+                await fetch(base + '/api/orders/' + currentMessageOrder.orderId + '/read/staff', {
                   method: 'POST'
                 });
                 // Refresh orders immediately so grey rows and badge update
@@ -486,7 +489,8 @@
       // Persist message via API (staff side)
       try {
         if (currentMessageOrder && currentMessageOrder.orderId) {
-          await fetch('http://localhost:3002/api/orders/' + currentMessageOrder.orderId + '/messages', {
+          const base = (window.API_BASE || '').replace(/\/$/, '');
+          await fetch(base + '/api/orders/' + currentMessageOrder.orderId + '/messages', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -531,7 +535,8 @@
       statusEl.textContent = 'Chargement des commandes...';
 
       try {
-        const res = await fetch('http://localhost:3002/api/orders?t=' + Date.now());
+        const base = (window.API_BASE || '').replace(/\/$/, '');
+        const res = await fetch(base + '/api/orders?t=' + Date.now());
         if (!res.ok) {
           throw new Error('HTTP ' + res.status);
         }
@@ -656,7 +661,8 @@
             tbody.insertBefore(detailRow, tr.nextSibling);
 
             try {
-              const res = await fetch('http://localhost:3002/api/orders/' + o.orderId + '?t=' + Date.now());
+              const base = (window.API_BASE || '').replace(/\/$/, '');
+              const res = await fetch(base + '/api/orders/' + o.orderId + '?t=' + Date.now());
               if (!res.ok) {
                 throw new Error('HTTP ' + res.status);
               }
@@ -729,7 +735,8 @@
                 stockBtn.addEventListener('click', async function (e) {
                   e.stopPropagation();
                   try {
-                    const resConfirm = await fetch('http://localhost:3002/api/orders/' + order.orderId + '/stock-confirm', {
+                    const base = (window.API_BASE || '').replace(/\/$/, '');
+                    const resConfirm = await fetch(base + '/api/orders/' + order.orderId + '/stock-confirm', {
                       method: 'POST'
                     });
                     if (!resConfirm.ok) {
@@ -750,7 +757,8 @@
                 prepareBtn.addEventListener('click', async function (e) {
                   e.stopPropagation();
                   try {
-                    const resPrep = await fetch('http://localhost:3002/api/orders/' + order.orderId + '/prepare', {
+                    const base = (window.API_BASE || '').replace(/\/$/, '');
+                    const resPrep = await fetch(base + '/api/orders/' + order.orderId + '/prepare', {
                       method: 'POST'
                     });
                     if (!resPrep.ok) {
@@ -773,7 +781,8 @@
                 readyBtn.addEventListener('click', async function (e) {
                   e.stopPropagation();
                   try {
-                    const resReady = await fetch('http://localhost:3002/api/orders/' + order.orderId + '/ready-for-delivery', {
+                    const base = (window.API_BASE || '').replace(/\/$/, '');
+                    const resReady = await fetch(base + '/api/orders/' + order.orderId + '/ready-for-delivery', {
                       method: 'POST'
                     });
                     if (!resReady.ok) {
