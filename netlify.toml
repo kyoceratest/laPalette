@@ -1,3 +1,4 @@
 [build]
   publish = "web"
-  command = ""
+  # Copy images from repo root to the published folder so /image/* resolves on Netlify
+  command = "mkdir -p web/image && cp -r image/* web/image/ || true"
