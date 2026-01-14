@@ -130,7 +130,7 @@
   </style>
 </head>
 <body>
-  <script src="config.js"></script>
+  <script src="config.js?v=20260114"></script>
   <script>console.log('API_BASE:', window.API_BASE);</script>
   <script defer src="header.js"></script>
   <div class="container">
@@ -254,7 +254,8 @@
 
               detailRoot.innerHTML = '<div class="delivery-detail-card">Chargement du détail de la commande…</div>';
               (function(){
-                var base = (window.API_BASE || '').replace(/\/$/, '');
+                var base = (window.API_BASE || 'https://lapalette.onrender.com').replace(/\/$/, '');
+                if (!window.API_BASE) { try { console.warn('API_BASE missing; using fallback', base); } catch(e){} }
                 return fetch(base + '/api/orders/' + orderId + '?t=' + Date.now())
               })()
                 .then(function (res) {
@@ -337,7 +338,8 @@
       function load() {
         setStatus('Chargement des commandes prêtes à livrer...', false);
         (function(){
-          var base = (window.API_BASE || '').replace(/\/$/, '');
+          var base = (window.API_BASE || 'https://lapalette.onrender.com').replace(/\/$/, '');
+          if (!window.API_BASE) { try { console.warn('API_BASE missing; using fallback', base); } catch(e){} }
           return fetch(base + '/api/orders?t=' + Date.now())
         })()
           .then(function (res) {
