@@ -295,8 +295,8 @@
     </div>
   </div>
 
+  <script defer src="config.js"></script>
   <script defer src="header.js"></script>
-  <script defer src="header.shared.js"></script>
 
   <script>
     (function () {
@@ -414,7 +414,8 @@
           loginBtn.disabled = true;
           setStatus('Connexion en cours…', '');
 
-          fetch('http://localhost:3002/auth/login', {
+          var base = (window.API_BASE || '').replace(/\/$/, '');
+          fetch(base + '/auth/login', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'
