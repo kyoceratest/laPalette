@@ -346,19 +346,17 @@
     // Normalize image URLs so that DB values like
     // - "filename.jpg" or "C1 Chantier.jpg"
     // - "image/filename.jpg"
-    // map to the deployed path under "/image/..." in the web folder.
+    // map to the deployed path under "image/..." (relative) in the web folder.
     function normalizeImageUrl(u) {
       if (!u) return '';
       try {
         var s = String(u).trim();
         if (!s) return '';
         if (/^https?:\/\//i.test(s)) return s; // external URL
-        // Ensure it starts with /image/
-        if (s[0] !== '/') s = '/' + s;
-        if (!/^\/image\//i.test(s)) {
-          // If it starts with /image already, keep; otherwise prefix
-          // Handle cases like /image\filename or /Filename
-          s = '/image/' + s.replace(/^\//, '');
+        // Ensure it starts with image/ (relative), not absolute /image/ to work under /laPalette/web/
+        s = s.replace(/^\/+/, ''); // remove any leading slashes
+        if (!/^image\//i.test(s)) {
+          s = 'image/' + s;
         }
         return s;
       } catch (e) { return ''; }
