@@ -1383,7 +1383,15 @@
                   alt: p.name,
                   className: 'product-image',
                   onError: function (e) {
-                    // Fallback to a neutral inline placeholder if the image fails
+                    // First fallback: try GitHub raw path if file not found on Netlify
+                    var triedRaw = e.target.getAttribute('data-tried-raw');
+                    if (!triedRaw) {
+                      e.target.setAttribute('data-tried-raw', '1');
+                      var path = (p.imageUrl || '').replace(/^\//, '');
+                      e.target.src = 'https://raw.githubusercontent.com/kyoceratest/laPalette/main/' + path;
+                      return;
+                    }
+                    // Final fallback: inline placeholder
                     e.target.onerror = null;
                     e.target.src = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="180"><rect width="100%" height="100%" fill="#eeeeee"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="Arial" font-size="14" fill="#999">Image indisponible</text></svg>');
                   }
@@ -1465,7 +1473,16 @@
                   src: product.imageUrl,
                   alt: product.name,
                   className: 'detail-image',
-                  onError: (e) => { e.target.style.display = 'none'; }
+                  onError: function (e) {
+                    var triedRaw = e.target.getAttribute('data-tried-raw');
+                    if (!triedRaw) {
+                      e.target.setAttribute('data-tried-raw', '1');
+                      var path = (product.imageUrl || '').replace(/^\//, '');
+                      e.target.src = 'https://raw.githubusercontent.com/kyoceratest/laPalette/main/' + path;
+                      return;
+                    }
+                    e.target.style.display = 'none';
+                  }
                 })
               : React.createElement('div', { style: { minHeight: '180px', background: '#eee', borderRadius: '6px' } }),
             // Middle column: text content
