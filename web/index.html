@@ -335,6 +335,7 @@
     <main id="root">Loading...</main>
   </div>
 
+  <script defer src="config.js"></script>
   <script defer src="header.js"></script>
   <!-- React via CDN (dev only) -->
   <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
@@ -361,7 +362,8 @@
       useEffect(() => {
         async function loadProducts() {
           try {
-            const res = await fetch('http://localhost:3002/api/products');
+            const base = (window.API_BASE || '').replace(/\/$/, '');
+            const res = await fetch(base + '/api/products');
             if (!res.ok) {
               throw new Error('HTTP ' + res.status);
             }
@@ -559,7 +561,8 @@
       useEffect(function () {
         async function loadOrders() {
           try {
-            const res = await fetch('http://localhost:3002/api/orders?t=' + Date.now());
+            const base = (window.API_BASE || '').replace(/\/$/, '');
+            const res = await fetch(base + '/api/orders?t=' + Date.now());
             if (!res.ok) {
               throw new Error('HTTP ' + res.status);
             }
@@ -660,7 +663,8 @@
         setDetailError('');
         setDetailLoading(true);
         try {
-          const res = await fetch('http://localhost:3002/api/orders/' + orderId + '?t=' + Date.now());
+          const base = (window.API_BASE || '').replace(/\/$/, '');
+          const res = await fetch(base + '/api/orders/' + orderId + '?t=' + Date.now());
           if (!res.ok) {
             throw new Error('HTTP ' + res.status);
           }
@@ -838,7 +842,8 @@
                               onClick: async function (e) {
                                 e.stopPropagation();
                                 try {
-                                  const payRes = await fetch('http://localhost:3002/api/orders/' + detail.order.orderId + '/pay', {
+                                  const base = (window.API_BASE || '').replace(/\/$/, '');
+                                  const payRes = await fetch(base + '/api/orders/' + detail.order.orderId + '/pay', {
                                     method: 'POST'
                                   });
                                   if (!payRes.ok) {
@@ -846,7 +851,8 @@
                                   }
 
                                   try {
-                                    const listRes = await fetch('http://localhost:3002/api/orders?t=' + Date.now());
+                                    const base2 = (window.API_BASE || '').replace(/\/$/, '');
+                                    const listRes = await fetch(base2 + '/api/orders?t=' + Date.now());
                                     if (listRes.ok) {
                                       const listData = await listRes.json();
                                       setOrders(listData || []);
@@ -875,7 +881,7 @@
                             'Scannez ce QR pour confirmer la livraison (démo).'
                           ),
                           React.createElement('img', {
-                            src: 'https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=' + encodeURIComponent('http://127.0.0.1:3000/laPalette/web/delivery.html?code=' + (detail.order.publicOrderCode || detail.order.orderId)),
+                            src: 'https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=' + encodeURIComponent(window.location.origin + '/delivery.html?code=' + (detail.order.publicOrderCode || detail.order.orderId)),
                             alt: 'QR confirmation de livraison',
                             style: { width: '160px', height: '160px', borderRadius: '4px', background: '#fff' }
                           })
