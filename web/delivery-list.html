@@ -130,6 +130,7 @@
   </style>
 </head>
 <body>
+  <script defer src="config.js"></script>
   <script defer src="header.js"></script>
   <div class="container">
     <h1>Commandes prêtes à livrer (démo)</h1>
@@ -251,7 +252,10 @@
               }
 
               detailRoot.innerHTML = '<div class="delivery-detail-card">Chargement du détail de la commande…</div>';
-              fetch('http://localhost:3002/api/orders/' + orderId + '?t=' + Date.now())
+              (function(){
+                var base = (window.API_BASE || '').replace(/\/$/, '');
+                return fetch(base + '/api/orders/' + orderId + '?t=' + Date.now())
+              })()
                 .then(function (res) {
                   if (!res.ok) throw new Error('HTTP ' + res.status);
                   return res.json();
@@ -331,7 +335,10 @@
 
       function load() {
         setStatus('Chargement des commandes prêtes à livrer...', false);
-        fetch('http://localhost:3002/api/orders?t=' + Date.now())
+        (function(){
+          var base = (window.API_BASE || '').replace(/\/$/, '');
+          return fetch(base + '/api/orders?t=' + Date.now())
+        })()
           .then(function (res) {
             if (!res.ok) throw new Error('HTTP ' + res.status);
             return res.json();

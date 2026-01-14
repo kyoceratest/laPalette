@@ -1074,7 +1074,8 @@
           return { limit: CREDIT_LIMIT, used: 0 };
         }
         try {
-          const res = await fetch('http://localhost:3002/api/orders?t=' + Date.now());
+          const baseCredit = (window.API_BASE || '').replace(/\/$/, '');
+          const res = await fetch(baseCredit + '/api/orders?t=' + Date.now());
           if (!res.ok) throw new Error('HTTP ' + res.status);
           const orders = await res.json();
           const lowerEmail = String(email).toLowerCase();
@@ -1159,7 +1160,8 @@
             deliveryTime
           };
 
-          const res = await fetch('http://localhost:3002/api/orders', {
+          const baseCreate = (window.API_BASE || '').replace(/\/$/, '');
+          const res = await fetch(baseCreate + '/api/orders', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)

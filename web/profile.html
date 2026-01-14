@@ -114,7 +114,8 @@
   </style>
 </head>
 <body>
-  <script defer src="header.shared.js"></script>
+  <script defer src="config.js"></script>
+  <script defer src="header.js"></script>
   <div class="container">
     <div class="card" id="profile-card">
       <h1>Mon profil (démo)</h1>
@@ -307,7 +308,8 @@
         // First try to load from backend customers table (Neon)
         if (initialEmail) {
           try {
-            var resp = await fetch('http://localhost:3002/api/customers/me?email=' + encodeURIComponent(initialEmail));
+            var base = (window.API_BASE || '').replace(/\/$/, '');
+            var resp = await fetch(base + '/api/customers/me?email=' + encodeURIComponent(initialEmail));
             if (resp.ok) {
               var customer = await resp.json();
               if (customer) {
@@ -403,7 +405,8 @@
         // Also sync with backend customers table (Neon)
         if (data.email) {
           try {
-            var resp = await fetch('http://localhost:3002/api/customers/me', {
+            var base = (window.API_BASE || '').replace(/\/$/, '');
+            var resp = await fetch(base + '/api/customers/me', {
               method: 'PUT',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
@@ -450,7 +453,8 @@
         creditLimitSpan.textContent = formatEuro(CREDIT_LIMIT).slice(1);
 
         try {
-          var res = await fetch('http://localhost:3002/api/orders?t=' + Date.now());
+          var base = (window.API_BASE || '').replace(/\/$/, '');
+          var res = await fetch(base + '/api/orders?t=' + Date.now());
           if (!res.ok) throw new Error('HTTP ' + res.status);
           var orders = await res.json();
           var email = String(authUser.email).toLowerCase();
@@ -510,7 +514,8 @@
         passwordSaveBtn.disabled = true;
 
         try {
-          var resp = await fetch('http://localhost:3002/auth/reset-demo', {
+          var base = (window.API_BASE || '').replace(/\/$/, '');
+          var resp = await fetch(base + '/auth/reset-demo', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
