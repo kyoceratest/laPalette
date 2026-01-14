@@ -143,8 +143,8 @@
   </style>
 </head>
 <body>
+  <script defer src="config.js"></script>
   <script defer src="header.js"></script>
-  <script defer src="header.shared.js"></script>
   <div class="lp-invoice-container">
     <h1>Mes factures (démo)</h1>
     <p class="small">Liste des factures générées à partir de vos commandes client (démo).</p>
@@ -277,7 +277,7 @@
                   }
                   proceedWithDownload();
                 } else {
-                  fetch('http://localhost:3002/api/orders/' + inv.orderId + '?t=' + Date.now())
+                  (function(){ var base=(window.API_BASE||'').replace(/\/$/, ''); return fetch(base + '/api/orders/' + inv.orderId + '?t=' + Date.now()); })()
                     .then(function (res) {
                       if (!res.ok) throw new Error('HTTP ' + res.status);
                       return res.json();
@@ -340,7 +340,7 @@
               inv.totalAmount = invoiceDetailsCache[inv.orderId].totalAmount;
             }
           } else {
-            fetch('http://localhost:3002/api/orders/' + inv.orderId + '?t=' + Date.now())
+            (function(){ var base=(window.API_BASE||'').replace(/\/$/, ''); return fetch(base + '/api/orders/' + inv.orderId + '?t=' + Date.now()); })()
               .then(function (res) {
                 if (!res.ok) throw new Error('HTTP ' + res.status);
                 return res.json();
@@ -695,7 +695,7 @@
         var initialOrderId = urlParams.get('orderId');
 
         setStatus('Chargement de vos factures (démo)…', false);
-        fetch('http://localhost:3002/api/orders?t=' + Date.now())
+        (function(){ var base=(window.API_BASE||'').replace(/\/$/, ''); return fetch(base + '/api/orders?t=' + Date.now()); })()
           .then(function (res) {
             if (!res.ok) throw new Error('HTTP ' + res.status);
             return res.json();
