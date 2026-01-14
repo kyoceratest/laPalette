@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Présentation du parcours client – La Palette (démo)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f5f5f5;
+      color: #222;
+    }
+    header {
+      background: #e0001a;
+      color: #fff;
+      padding: 0.75rem 1.25rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+    }
+    header button {
+      background: #fff;
+      color: #e0001a;
+      border: none;
+      padding: 0.35rem 0.75rem;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+    header button:hover {
+      background: #ffe6ea;
+    }
+    .layout {
+      max-width: 1100px;
+      margin: 1rem auto;
+      padding: 0 1rem 2rem;
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      gap: 1rem;
+      align-items: flex-start;
+    }
+    .steps-list {
+      background: #fff;
+      border-radius: 6px;
+      padding: 0.75rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    .steps-list h2 {
+      font-size: 0.95rem;
+      margin: 0 0 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #555;
+    }
+    .step-link {
+      display: block;
+      width: 100%;
+      text-align: left;
+      border: none;
+      background: transparent;
+      padding: 0.4rem 0.35rem;
+      border-radius: 4px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      color: #333;
+    }
+    .step-link span {
+      display: inline-block;
+      min-width: 1.6rem;
+      font-weight: 600;
+      color: #999;
+    }
+    .step-link.active {
+      background: #e0001a;
+      color: #fff;
+    }
+    .step-link.active span {
+      color: #fff;
+    }
+
+    .content-card {
+      background: #fff;
+      border-radius: 6px;
+      padding: 1rem 1.25rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      position: relative;
+      overflow: hidden;
+    }
+    .content-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.75rem;
+      gap: 0.5rem;
+    }
+    .content-header h1 {
+      font-size: 1.15rem;
+      margin: 0;
+    }
+    .badge-demo {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      background: #fff4f6;
+      color: #b00014;
+      padding: 0.15rem 0.5rem;
+      border-radius: 999px;
+      border: 1px solid #ffc4cf;
+    }
+    .step-body {
+      margin-top: 0.5rem;
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+    .step-body ul {
+      padding-left: 1.1rem;
+      margin: 0.25rem 0 0.75rem;
+    }
+    .step-body li {
+      margin-bottom: 0.2rem;
+    }
+
+    .controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 0.75rem;
+      font-size: 0.85rem;
+      color: #666;
+      gap: 0.5rem;
+    }
+    .controls-left button,
+    .controls-right button {
+      border: none;
+      border-radius: 999px;
+      padding: 0.3rem 0.75rem;
+      font-size: 0.85rem;
+      cursor: pointer;
+      background: #f0f0f0;
+      color: #333;
+    }
+    .controls-left button:hover,
+    .controls-right button:hover {
+      background: #e0e0e0;
+    }
+    .controls-right button.primary {
+      background: #e0001a;
+      color: #fff;
+    }
+    .controls-right button.primary:hover {
+      background: #c00014;
+    }
+
+    .auto-indicator {
+      font-size: 0.8rem;
+      color: #777;
+    }
+
+    @media (max-width: 800px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <script defer src="header.js"></script>
+  <script defer src="header.shared.js"></script>
+
+  <main class="layout">
+    <aside class="steps-list">
+      <h2>Étapes du parcours</h2>
+      <button class="step-link" data-step="0"><span>1.</span> Page boutique (index.html)</button>
+      <button class="step-link" data-step="1"><span>2.</span> Page login (login.html)</button>
+      <button class="step-link" data-step="2"><span>3.</span> Page reset mot de passe (reset-password.html)</button>
+      <button class="step-link" data-step="3"><span>4.</span> Page profil & crédit (profile.html)</button>
+      <button class="step-link" data-step="4"><span>5.</span> Page liste commandes (orders.html)</button>
+      <button class="step-link" data-step="5"><span>6.</span> Page préparation commande (prepare.html)</button>
+    </aside>
+
+    <section class="content-card" id="presentation-content" aria-live="polite">
+      <div class="content-header">
+        <h1 id="step-title">Accès général</h1>
+        <span class="badge-demo">Interface de démonstration</span>
+      </div>
+      <div class="step-body" id="step-body">
+        <!-- Filled dynamically -->
+      </div>
+      <div class="controls">
+        <div class="controls-left">
+          <button type="button" id="prev-step-btn">◀ Précédent</button>
+          <button type="button" id="next-step-btn">Suivant ▶</button>
+        </div>
+        <div class="controls-right">
+          <span class="auto-indicator" id="auto-indicator">Lecture automatique : active</span>
+          <button type="button" id="toggle-auto-btn" class="primary">Pause</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (function () {
+      // Header actions handled by shared header.
+
+      // Steps data (UI text in French, code in English)
+      // Each step now maps clearly to one concrete HTML page.
+      var steps = [
+        {
+          title: 'Page boutique (index.html)',
+          html: '<p>Vue principale de la boutique client.</p>' +
+            '<ul>' +
+            '<li>Ouvrir <a href="index.html" target="_blank"><strong>index.html</strong></a> dans le navigateur.</li>' +
+            '<li>Voir l\'en-tête avec les boutons <em>Présentation</em>, <em>Mes commandes</em>, <em>Mon profil</em>, <em>Login</em>.</li>' +
+            '<li>Colonne gauche&nbsp;: catégories et <strong>panier</strong> avec bouton <em>Mes commandes (démo)</em>.</li>' +
+            '<li>Colonne droite&nbsp;: liste de produits avec quantités et bouton <em>Ajouter au panier</em>.</li>' +
+            '<li>Bouton <strong>Passer à la commande (démo)</strong> pour accéder au checkout.</li>' +
+            '</ul>'
+        },
+        {
+          title: 'Page login (login.html)',
+          html: '<p>Connexion avec des comptes de démonstration pour client, magasin et admin.</p>' +
+            '<ul>' +
+            '<li>Accès depuis le bouton <strong>Login</strong> dans l\'en-tête de <a href="index.html" target="_blank"><em>index.html</em></a>.</li>' +
+            '<li>Sélection du <strong>type de compte</strong> (CLIENT, SHOP, ADMIN).</li>' +
+            '<li>Liste filtrable de comptes démo avec emails et rôles.</li>' +
+            '<li>Champs email / mot de passe, option <em>se souvenir de moi</em>.</li>' +
+            '<li>Lien vers la page <a href="reset-password.html" target="_blank"><strong>reset-password.html</strong></a> pour le changement de mot de passe (démo).</li>' +
+            '</ul>'
+        },
+        {
+          title: 'Page reset mot de passe (reset-password.html)',
+          html: '<p>Page dédiée au changement de mot de passe <strong>démo uniquement</strong>.</p>' +
+            '<ul>' +
+            '<li>Accessible depuis un lien de la page <a href="login.html" target="_blank"><strong>login.html</strong></a>.</li>' +
+            '<li>Formulaire avec email, ancien mot de passe et nouveau mot de passe (saisi deux fois).</li>' +
+            '<li>Appel à l\'API <code>/auth/reset-demo</code> pour mettre à jour le mot de passe en mémoire.</li>' +
+            '<li>Message clair expliquant que les comptes sont fictifs et non persistés.</li>' +
+            '<li>Bouton pour revenir vers la page de <a href="login.html" target="_blank"><strong>login</strong></a>.</li>' +
+            '</ul>'
+        },
+        {
+          title: 'Page profil & crédit (profile.html)',
+          html: '<p>Page où le client gère ses données et visualise son crédit démo.</p>' +
+            '<ul>' +
+            '<li>Accès depuis le bouton <strong>Mon profil</strong> de <a href="index.html" target="_blank"><em>index.html</em></a>.</li>' +
+            '<li>Zone <strong>Informations du client</strong>&nbsp;: nom, email, téléphone, société, adresse (stockés en localStorage).</li>' +
+            '<li>Zone <strong>Informations de crédit (démo)</strong>&nbsp;: limite 2&nbsp;000&nbsp;€, crédit utilisé, crédit disponible.</li>' +
+            '<li>Zone <strong>Changer mon mot de passe (démo)</strong> réutilisant l\'API <code>/auth/reset-demo</code>.</li>' +
+            '<li>Page en français pour l\'utilisateur, logique en anglais pour les développeurs.</li>' +
+            '</ul>'
+        },
+        {
+          title: 'Page liste commandes (orders.html)',
+          html: '<p>Vue back-office pour consulter les commandes par magasin.</p>' +
+            '<ul>' +
+            '<li>Accessible après connexion avec un compte <strong>SHOP</strong> ou <strong>ADMIN</strong> sur <a href="login.html" target="_blank"><em>login.html</em></a>.</li>' +
+            '<li>Liste des commandes alimentée par <code>/api/orders</code> (page <a href="orders.html" target="_blank"><strong>orders.html</strong></a>).</li>' +
+            '<li>Filtrage côté front pour n\'afficher que les commandes du <strong>shopId</strong> du compte connecté.</li>' +
+            '<li>Affichage des statuts, montants, et liens vers la préparation de commande.</li>' +
+            '<li>Page pensée pour le personnel de magasin / administrateur.</li>' +
+            '</ul>'
+        },
+        {
+          title: 'Page préparation commande (prepare.html)',
+          html: '<p>Écran de détail et de préparation d\'une commande.</p>' +
+            '<ul>' +
+            '<li>Ouverte depuis un lien / bouton dans <a href="orders.html" target="_blank"><strong>orders.html</strong></a>.</li>' +
+            '<li>Charge le détail d\'une commande avec ses lignes produits.</li>' +
+            '<li>Vérification que le compte connecté appartient bien au magasin de la commande.</li>' +
+            '<li>Boutons pour faire évoluer le statut (préparation, prêt pour livraison, etc.).</li>' +
+            '<li>Permet de montrer le flux complet côté magasin, sans impacter de vraies données.</li>' +
+            '</ul>'
+        }
+      ];
+
+      var currentIndex = 0;
+      var autoPlay = true;
+      var autoIntervalMs = 10000; // 10 seconds per step
+      var autoTimer = null;
+
+      var titleEl = document.getElementById('step-title');
+      var bodyEl = document.getElementById('step-body');
+      var links = Array.prototype.slice.call(document.querySelectorAll('.step-link'));
+      var prevBtn = document.getElementById('prev-step-btn');
+      var nextBtn = document.getElementById('next-step-btn');
+      var toggleAutoBtn = document.getElementById('toggle-auto-btn');
+      var autoIndicator = document.getElementById('auto-indicator');
+
+      function renderStep(index) {
+        if (index < 0 || index >= steps.length) return;
+        currentIndex = index;
+        var step = steps[index];
+        if (titleEl) {
+          titleEl.textContent = step.title;
+        }
+        if (bodyEl) {
+          bodyEl.innerHTML = step.html;
+        }
+        links.forEach(function (btn) {
+          var stepIdx = parseInt(btn.getAttribute('data-step'), 10);
+          if (stepIdx === index) {
+            btn.classList.add('active');
+          } else {
+            btn.classList.remove('active');
+          }
+        });
+      }
+
+      function goNext() {
+        var next = currentIndex + 1;
+        if (next >= steps.length) {
+          next = 0;
+        }
+        renderStep(next);
+      }
+
+      function goPrev() {
+        var prev = currentIndex - 1;
+        if (prev < 0) {
+          prev = steps.length - 1;
+        }
+        renderStep(prev);
+      }
+
+      function updateAutoIndicator() {
+        if (!autoIndicator || !toggleAutoBtn) return;
+        if (autoPlay) {
+          autoIndicator.textContent = 'Lecture automatique : active';
+          toggleAutoBtn.textContent = 'Pause';
+        } else {
+          autoIndicator.textContent = 'Lecture automatique : en pause';
+          toggleAutoBtn.textContent = 'Reprendre';
+        }
+      }
+
+      function startAuto() {
+        if (autoTimer) {
+          clearInterval(autoTimer);
+        }
+        if (!autoPlay) return;
+        autoTimer = setInterval(function () {
+          goNext();
+        }, autoIntervalMs);
+        updateAutoIndicator();
+      }
+
+      function stopAuto() {
+        if (autoTimer) {
+          clearInterval(autoTimer);
+          autoTimer = null;
+        }
+        updateAutoIndicator();
+      }
+
+      // Wire events
+      links.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var idx = parseInt(btn.getAttribute('data-step'), 10);
+          if (!isNaN(idx)) {
+            renderStep(idx);
+            // When the user clicks manually, we keep autoPlay state but restart timer
+            if (autoPlay) {
+              startAuto();
+            }
+          }
+        });
+      });
+
+      if (prevBtn) {
+        prevBtn.addEventListener('click', function () {
+          goPrev();
+          if (autoPlay) {
+            startAuto();
+          }
+        });
+      }
+
+      if (nextBtn) {
+        nextBtn.addEventListener('click', function () {
+          goNext();
+          if (autoPlay) {
+            startAuto();
+          }
+        });
+      }
+
+      if (toggleAutoBtn) {
+        toggleAutoBtn.addEventListener('click', function () {
+          autoPlay = !autoPlay;
+          if (autoPlay) {
+            startAuto();
+          } else {
+            stopAuto();
+          }
+        });
+      }
+
+      // Pause autoplay when mouse is over the content card
+      var contentCard = document.getElementById('presentation-content');
+      if (contentCard) {
+        contentCard.addEventListener('mouseenter', function () {
+          if (autoPlay) {
+            stopAuto();
+          }
+        });
+        contentCard.addEventListener('mouseleave', function () {
+          if (autoPlay) {
+            startAuto();
+          }
+        });
+      }
+
+      // Initial render
+      renderStep(0);
+      startAuto();
+    })();
+  </script>
+</body>
+</html>

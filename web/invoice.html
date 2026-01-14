@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Mes factures – La Palette (démo)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f5f5f5;
+    }
+    header {
+      background: #e0001a;
+      color: #fff;
+      padding: 0.75rem 1.25rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+    }
+    #cart-header button {
+      border: none;
+      background: #0070f3;
+      color: #fff;
+      padding: 0.35rem 0.75rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+    .lp-invoice-container {
+      max-width: 960px;
+      margin: 1rem auto 2rem;
+      padding: 0 1rem;
+    }
+    .lp-invoice-card {
+      background: #fff;
+      border-radius: 6px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+      padding: 1rem 1.25rem 1.25rem;
+      margin-top: 0.75rem;
+      font-size: 0.9rem;
+    }
+    .lp-invoice-list-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+      margin-top: 0.5rem;
+    }
+    .lp-invoice-list-table th,
+    .lp-invoice-list-table td {
+      padding: 0.4rem 0.55rem;
+      border-bottom: 1px solid #eee;
+      text-align: left;
+    }
+    .lp-invoice-list-table th:last-child,
+    .lp-invoice-list-table td:last-child {
+      text-align: right;
+    }
+    .lp-invoice-list-table tr:last-child td {
+      border-bottom: none;
+    }
+    .lp-invoice-status-badge {
+      display: inline-block;
+      padding: 0.05rem 0.4rem;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      background: #e3f2fd;
+      color: #0d47a1;
+    }
+    .lp-invoice-preview-card {
+      background: #e9e9e9;
+      border-radius: 6px;
+      padding: 0.9rem 1.2rem;
+      font-size: 0.9rem;
+    }
+    .lp-invoice-preview-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 0.75rem;
+      gap: 1rem;
+    }
+    .lp-invoice-preview-flex {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.8rem;
+      align-items: flex-start;
+    }
+    .lp-invoice-preview-col {
+      flex: 1 1 260px;
+      text-align: left;
+    }
+    .lp-invoice-lines-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+      margin-top: 0.35rem;
+    }
+    .lp-invoice-lines-table th,
+    .lp-invoice-lines-table td {
+      padding: 0.35rem 0.45rem;
+      border-bottom: 1px solid #ccc;
+      text-align: left;
+    }
+    .lp-invoice-lines-table th:last-child,
+    .lp-invoice-lines-table td:last-child {
+      text-align: right;
+    }
+    .lp-invoice-btn {
+      border: none;
+      border-radius: 4px;
+      padding: 0.3rem 0.7rem;
+      font-size: 0.8rem;
+      cursor: pointer;
+    }
+    .lp-invoice-btn-primary {
+      background: #0070f3;
+      color: #fff;
+    }
+    .lp-invoice-btn-secondary {
+      background: #555;
+      color: #fff;
+    }
+    .lp-invoice-empty {
+      margin-top: 0.75rem;
+      font-size: 0.9rem;
+      color: #555;
+    }
+    @media (max-width: 768px) {
+      .lp-invoice-preview-flex {
+        flex-direction: column;
+      }
+      .lp-invoice-preview-col {
+        flex: 1 1 100%;
+      }
+      .lp-invoice-preview-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <script defer src="header.js"></script>
+  <script defer src="header.shared.js"></script>
+  <div class="lp-invoice-container">
+    <h1>Mes factures (démo)</h1>
+    <p class="small">Liste des factures générées à partir de vos commandes client (démo).</p>
+
+    <div id="lp-invoice-status" class="small" style="margin-top:0.5rem;">Chargement de vos factures…</div>
+
+    <div class="lp-invoice-card" id="lp-invoice-list-card">
+      <h2 style="margin-top:0;margin-bottom:0.5rem;font-size:1rem;">Liste des factures</h2>
+      <div id="lp-invoice-list"></div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      // Header interactions handled by shared header (header.js)
+    })();
+  </script>
+  <script>
+    (function () {
+      var statusEl = document.getElementById('lp-invoice-status');
+      var listRoot = document.getElementById('lp-invoice-list');
+      var selectedInvoiceOrderId = null;
+      var invoices = [];
+      var invoiceDetailsCache = {}; // orderId -> { items: [...], totalAmount, ... }
+
+      function setStatus(msg, isError) {
+        if (!statusEl) return;
+        statusEl.textContent = msg || '';
+        statusEl.style.color = isError ? '#b71c1c' : '#666';
+      }
+
+      function getCurrentUser() {
+        try {
+          var raw = window.localStorage.getItem('lp_auth_user');
+          if (!raw) return null;
+          var user = JSON.parse(raw);
+          return user;
+        } catch (e) {
+          return null;
+        }
+      }
+
+      function renderList() {
+        if (!listRoot) return;
+        if (!invoices.length) {
+          listRoot.innerHTML = '<div class="lp-invoice-empty">Aucune facture disponible pour le moment (démo).</div>';
+          return;
+        }
+        var html = '';
+        html += '<table class="lp-invoice-list-table">';
+        html += '<thead><tr>';
+        html += '<th>Facture</th><th>Commande</th><th>Date</th><th>Total (€)</th><th>Statut</th><th>Actions</th>';
+        html += '</tr></thead><tbody>';
+        invoices.forEach(function (inv) {
+          html += '<tr>';
+          html += '<td>' + (inv.invoiceCode || ('F-' + inv.orderId)) + '</td>';
+          html += '<td>' + (inv.publicOrderCode || inv.orderId) + '</td>';
+          html += '<td>' + (inv.orderDate || '') + '</td>';
+          html += '<td>' + Number(inv.totalAmount || 0).toFixed(2) + '</td>';
+          html += '<td><span class="lp-invoice-status-badge">' + (inv.status || 'COMPLETED') + '</span></td>';
+          html += '<td style="text-align:right;">';
+          html += '<button type="button" class="lp-invoice-btn lp-invoice-btn-primary" data-role="preview" data-order-id="' + inv.orderId + '">Aperçu</button> ';
+          html += '<button type="button" class="lp-invoice-btn lp-invoice-btn-secondary" data-role="download" data-order-id="' + inv.orderId + '">Télécharger</button>';
+          html += '</td>';
+          html += '</tr>';
+
+          // detail row for inline preview (initially hidden)
+          html += '<tr class="lp-invoice-detail-row" data-order-id="' + inv.orderId + '" style="display:none;">';
+          html += '<td colspan="6">';
+          html += '<div class="lp-invoice-preview-card" id="lp-invoice-preview-' + inv.orderId + '">';
+          html += '<p class="small">Chargement de la facture…</p>';
+          html += '</div>';
+          html += '</td>';
+          html += '</tr>';
+        });
+        html += '</tbody></table>';
+        listRoot.innerHTML = html;
+
+        var previewButtons = listRoot.querySelectorAll('button[data-role="preview"]');
+        for (var i = 0; i < previewButtons.length; i++) {
+          (function (btn) {
+            btn.addEventListener('click', function () {
+              var id = btn.getAttribute('data-order-id');
+              if (!id) return;
+              var numericId = Number(id);
+
+              // toggle behavior: close if same invoice is already open
+              if (selectedInvoiceOrderId && selectedInvoiceOrderId === numericId) {
+                var prevRow = listRoot.querySelector('tr.lp-invoice-detail-row[data-order-id="' + selectedInvoiceOrderId + '"]');
+                if (prevRow) prevRow.style.display = 'none';
+                selectedInvoiceOrderId = null;
+                return;
+              }
+
+              // hide previous detail row if any
+              if (selectedInvoiceOrderId) {
+                var oldRow = listRoot.querySelector('tr.lp-invoice-detail-row[data-order-id="' + selectedInvoiceOrderId + '"]');
+                if (oldRow) oldRow.style.display = 'none';
+              }
+
+              selectedInvoiceOrderId = numericId;
+              var detailRow = listRoot.querySelector('tr.lp-invoice-detail-row[data-order-id="' + numericId + '"]');
+              if (detailRow) {
+                detailRow.style.display = '';
+              }
+              renderPreview();
+            });
+          })(previewButtons[i]);
+        }
+
+        var downloadButtons = listRoot.querySelectorAll('button[data-role="download"]');
+        for (var j = 0; j < downloadButtons.length; j++) {
+          (function (btn) {
+            btn.addEventListener('click', function () {
+              var id = btn.getAttribute('data-order-id');
+              if (!id) return;
+              var inv = findInvoiceByOrderId(id);
+              if (!inv) return;
+
+              function proceedWithDownload() {
+                openInvoicePrintWindow(inv);
+              }
+
+              // Ensure we have detailed items before generating the printable invoice
+              if (!inv.items || !inv.items.length) {
+                if (invoiceDetailsCache[inv.orderId]) {
+                  inv.items = invoiceDetailsCache[inv.orderId].items || [];
+                  if (!inv.totalAmount && typeof invoiceDetailsCache[inv.orderId].totalAmount !== 'undefined') {
+                    inv.totalAmount = invoiceDetailsCache[inv.orderId].totalAmount;
+                  }
+                  proceedWithDownload();
+                } else {
+                  fetch('http://localhost:3002/api/orders/' + inv.orderId + '?t=' + Date.now())
+                    .then(function (res) {
+                      if (!res.ok) throw new Error('HTTP ' + res.status);
+                      return res.json();
+                    })
+                    .then(function (data) {
+                      var order = data && data.order ? data.order : {};
+                      var items = data && data.items ? data.items : [];
+                      invoiceDetailsCache[inv.orderId] = {
+                        items: items,
+                        totalAmount: order.totalAmount
+                      };
+                      inv.items = items;
+                      if (!inv.totalAmount && typeof order.totalAmount !== 'undefined') {
+                        inv.totalAmount = order.totalAmount;
+                      }
+                      proceedWithDownload();
+                    })
+                    .catch(function (err) {
+                      console.error('Failed to load invoice detail before download (demo)', err);
+                      // If detail can't be loaded (404 or other), still allow download with summary info
+                      proceedWithDownload();
+                    });
+                }
+              } else {
+                proceedWithDownload();
+              }
+            });
+          })(downloadButtons[j]);
+        }
+      }
+
+      function findInvoiceByOrderId(orderId) {
+        var idNum = Number(orderId);
+        for (var i = 0; i < invoices.length; i++) {
+          if (Number(invoices[i].orderId) === idNum) return invoices[i];
+        }
+        return null;
+      }
+
+      function renderPreview() {
+        if (!selectedInvoiceOrderId) {
+          return;
+        }
+        var inv = findInvoiceByOrderId(selectedInvoiceOrderId);
+        if (!inv) {
+          return;
+        }
+
+        var previewRoot = document.getElementById('lp-invoice-preview-' + selectedInvoiceOrderId);
+        if (!previewRoot) return;
+
+        // If we don't yet have detailed items for this order, load them from the backend first
+        if (!inv.items || !inv.items.length) {
+          previewRoot.innerHTML = '<p class="small">Chargement du détail de la facture…</p>';
+
+          // Use cache if we already fetched details once
+          if (invoiceDetailsCache[inv.orderId]) {
+            inv.items = invoiceDetailsCache[inv.orderId].items || [];
+            if (!inv.totalAmount && typeof invoiceDetailsCache[inv.orderId].totalAmount !== 'undefined') {
+              inv.totalAmount = invoiceDetailsCache[inv.orderId].totalAmount;
+            }
+          } else {
+            fetch('http://localhost:3002/api/orders/' + inv.orderId + '?t=' + Date.now())
+              .then(function (res) {
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                return res.json();
+              })
+              .then(function (data) {
+                var order = data && data.order ? data.order : {};
+                var items = data && data.items ? data.items : [];
+                invoiceDetailsCache[inv.orderId] = {
+                  items: items,
+                  totalAmount: order.totalAmount
+                };
+                inv.items = items;
+                if (!inv.totalAmount && typeof order.totalAmount !== 'undefined') {
+                  inv.totalAmount = order.totalAmount;
+                }
+                // Re-render now that we have full details
+                renderPreview();
+              })
+              .catch(function (err) {
+                console.error('Failed to load invoice detail (demo)', err);
+                previewRoot.innerHTML = '<p class="small" style="color:#b71c1c;">Erreur lors du chargement du détail de la facture (démo).</p>';
+              });
+            return;
+          }
+        }
+
+        var html = buildInvoiceInnerHtml(inv);
+        previewRoot.innerHTML = html;
+      }
+
+      function buildInvoiceInnerHtml(inv) {
+        var html = '';
+        var totalTTC = Number(inv.totalAmount || 0) || 0;
+        var ht = totalTTC / 1.2;
+        var tva = totalTTC - ht;
+
+        html += '<div class="lp-invoice-preview-header">';
+        html += '<div>'; // left header
+        html += '<p style="margin:0 0 0.25rem 0;"><strong>La Palette – Facture (démo)</strong></p>';
+        html += '<p style="margin:0;">Commande : ' + (inv.publicOrderCode || inv.orderId) + '</p>';
+        html += '</div>';
+        html += '<div style="text-align:right;">';
+        html += '<p style="margin:0;">Facture n° ' + (inv.invoiceCode || ('F-' + inv.orderId)) + '</p>';
+        if (inv.orderDate) {
+          html += '<p style="margin:0;">Date : ' + inv.orderDate + '</p>';
+        }
+        html += '</div>';
+        html += '</div>'; // end header
+
+        html += '<div class="lp-invoice-preview-flex">';
+        html += '<div class="lp-invoice-preview-col">';
+        html += '<p><strong>Informations client</strong></p>';
+
+        var displayName = inv.customerContactName || inv.customerCompanyName || inv.customerName || '';
+        if (displayName || inv.email) {
+          html += '<p>Client : ' + displayName;
+          if (inv.email) {
+            html += ' – ' + inv.email;
+          }
+          html += '</p>';
+        }
+
+        var addressParts = [];
+        if (inv.customerAddressLine1) addressParts.push(inv.customerAddressLine1);
+        if (inv.customerAddressLine2) addressParts.push(inv.customerAddressLine2);
+        var lineCity = [];
+        if (inv.customerPostalCode) lineCity.push(inv.customerPostalCode);
+        if (inv.customerCity) lineCity.push(inv.customerCity);
+        var lineCityStr = lineCity.join(' ');
+        if (lineCityStr) addressParts.push(lineCityStr);
+        if (inv.customerCountry) addressParts.push(inv.customerCountry);
+
+        var fullAddr = addressParts.join(', ');
+        if (!fullAddr && inv.address) {
+          fullAddr = inv.address;
+        }
+        if (fullAddr) {
+          html += '<p>Adresse : ' + fullAddr + '</p>';
+        }
+
+        if (inv.customerVatNumber) {
+          html += '<p>N° TVA : ' + inv.customerVatNumber + '</p>';
+        }
+        if (inv.customerCode) {
+          html += '<p>Code client : ' + inv.customerCode + '</p>';
+        }
+
+        if (inv.shopName) {
+          html += '<p>Magasin : ' + inv.shopName + '</p>';
+        }
+
+        html += '</div>';
+
+        html += '<div class="lp-invoice-preview-col">';
+        html += '<p><strong>Articles</strong></p>';
+        if (inv.items && inv.items.length) {
+          html += '<table class="lp-invoice-lines-table">';
+          html += '<thead><tr><th>Description</th><th>Qté</th><th>Prix HT</th><th>Total HT</th></tr></thead><tbody>';
+          inv.items.forEach(function (it) {
+            var label = it.productName || ('Produit #' + it.productId);
+            var unitTTC = Number(it.unitPrice || 0) || 0;
+            var unitHT = unitTTC / 1.2;
+            var qty = Number(it.quantity || 0) || 0;
+            var lineHT = unitHT * qty;
+            html += '<tr>';
+            html += '<td>' + label + '</td>';
+            html += '<td>' + qty + '</td>';
+            html += '<td>€' + unitHT.toFixed(2) + '</td>';
+            html += '<td>€' + lineHT.toFixed(2) + '</td>';
+            html += '</tr>';
+          });
+          html += '</tbody></table>';
+        } else {
+          html += '<p>(Aucun article pour cette facture.)</p>';
+        }
+        html += '</div>';
+        html += '</div>'; // end flex
+
+        html += '<div style="margin-top:0.75rem; text-align:right; font-size:0.9rem;">';
+        html += '<p style="margin:0;">Total HT : <strong>€' + ht.toFixed(2) + '</strong></p>';
+        html += '<p style="margin:0;">TVA (20%) : <strong>€' + tva.toFixed(2) + '</strong></p>';
+        html += '<p style="margin:0.25rem 0 0 0;">Total TTC : <strong>€' + totalTTC.toFixed(2) + '</strong></p>';
+        html += '</div>';
+
+        return html;
+      }
+
+      function openInvoicePrintWindow(inv) {
+        var win = window.open('', '_blank');
+        if (!win) {
+          alert('Impossible d\'ouvrir la fenêtre pour l\'impression (popup bloquée ?).');
+          return;
+        }
+        
+        // amounts
+        var totalTTC = Number(inv.totalAmount || 0) || 0;
+        var ht = totalTTC / 1.2;
+        var tva = totalTTC - ht;
+        var tvaRate = 20;
+
+        var docHtml = '';
+        docHtml += '<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8">';
+        docHtml += '<title>Facture ' + (inv.invoiceCode || ('F-' + inv.orderId)) + '</title>';
+        docHtml += '<style>';
+        docHtml += 'body{font-family:system-ui,-apple-system,BlinkMacSystemFont,\'Segoe UI\',sans-serif;margin:0;padding:0;background:#fff;}';
+        docHtml += '.page{width:210mm;min-height:297mm;margin:0 auto;padding:10mm 12mm;box-sizing:border-box;font-size:10pt;}';
+        docHtml += '.meta-row{display:flex;justify-content:space-between;font-size:8pt;margin-bottom:6px;}';
+        docHtml += '.meta-center{flex:1;text-align:center;font-weight:600;}';
+        docHtml += '.header-row{display:flex;justify-content:space-between;gap:6mm;margin-bottom:4mm;}';
+        docHtml += '.header-box{border:1px solid #000;padding:3mm 4mm;box-sizing:border-box;}';
+        docHtml += '.header-left{width:60%;}';
+        docHtml += '.header-right{width:38%;text-align:left;}';
+        docHtml += '.label-row{display:flex;justify-content:space-between;font-size:8pt;margin-bottom:1mm;}';
+        docHtml += '.label-key{font-weight:600;margin-right:2mm;}';
+        docHtml += '.big-title{text-align:center;font-size:14pt;font-weight:700;margin:2mm 0;}';
+        docHtml += '.band-row{display:flex;justify-content:space-between;gap:6mm;margin-bottom:3mm;}';
+        docHtml += '.band-col{border:1px solid #000;padding:2mm 3mm;box-sizing:border-box;}';
+        docHtml += '.band-left{width:40%;}';
+        docHtml += '.band-middle{width:22%;text-align:center;}';
+        docHtml += '.band-right{width:38%;}';
+        docHtml += '.band-title{font-weight:600;margin-bottom:1mm;font-size:9pt;}';
+        docHtml += '.qr-box{border:1px solid #000;height:30mm;margin:0 auto 2mm auto;}';
+        docHtml += '.small-box{border:1px solid #000;border-radius:2mm;padding:2mm 3mm;margin-top:2mm;font-size:8pt;}';
+        docHtml += '.ref-line{font-size:8pt;font-weight:600;margin:2mm 0;border-top:1px solid #000;padding-top:1mm;}';
+        docHtml += '.lines-table{width:100%;border-collapse:collapse;font-size:8.5pt;margin-top:2mm;}';
+        docHtml += '.lines-table th,.lines-table td{border:1px solid #000;padding:2px 3px;}';
+        docHtml += '.lines-table th{text-align:left;background:#eee;}';
+        docHtml += '.lines-table th.num,.lines-table td.num{text-align:right;}';
+        docHtml += '.footer-row{display:flex;justify-content:space-between;gap:4mm;margin-top:4mm;}';
+        docHtml += '.vat-summary{border:1px solid #000;padding:2mm 3mm;width:45%;font-size:8pt;}';
+        docHtml += '.vat-table{width:100%;border-collapse:collapse;margin-top:1mm;font-size:8pt;}';
+        docHtml += '.vat-table th,.vat-table td{border:1px solid #000;padding:1px 3px;text-align:right;}';
+        docHtml += '.vat-table th{text-align:center;background:#eee;}';
+        docHtml += '.totals-box{border:1px solid #000;padding:2mm 4mm;width:35%;font-size:9pt;}';
+        docHtml += '.totals-box .line{display:flex;justify-content:space-between;margin-bottom:1mm;}';
+        docHtml += '.totals-box .label{font-weight:600;}';
+        docHtml += '.totals-box .grand{font-weight:700;background:#f4e4f4;border:1px solid #000;padding:1mm 1.5mm;margin-top:1mm;}';
+        docHtml += '.legal{font-size:7pt;margin-top:4mm;border-top:1px solid #000;padding-top:2mm;}';
+        docHtml += '@media print{body{background:#fff;} .page{box-shadow:none;margin:0;}}';
+        docHtml += '</style></head><body>';
+
+        // date / invoice code / customer label
+        var now = new Date();
+        var day = String(now.getDate()).padStart(2, '0');
+        var month = String(now.getMonth() + 1).padStart(2, '0');
+        var year = now.getFullYear();
+        var hours = String(now.getHours()).padStart(2, '0');
+        var minutes = String(now.getMinutes()).padStart(2, '0');
+        var dateStr = day + '/' + month + '/' + year + ' ' + hours + ':' + minutes;
+        var invoiceCode = inv.invoiceCode || ('F-' + inv.orderId);
+        var orderDate = inv.orderDate || '';
+
+        var customerLabel = inv.customerContactName || inv.customerCompanyName || inv.customerName || '';
+        if (inv.customerCode) {
+          customerLabel = inv.customerCode + ' - ' + customerLabel;
+        }
+
+        var addrParts = [];
+        if (inv.customerAddressLine1) addrParts.push(inv.customerAddressLine1);
+        if (inv.customerAddressLine2) addrParts.push(inv.customerAddressLine2);
+        var cityLine = [];
+        if (inv.customerPostalCode) cityLine.push(inv.customerPostalCode);
+        if (inv.customerCity) cityLine.push(inv.customerCity);
+        if (cityLine.length) addrParts.push(cityLine.join(' '));
+        if (inv.customerCountry) addrParts.push(inv.customerCountry);
+        var addrStr = addrParts.join('<br />');
+        if (!addrStr && inv.address) {
+          addrStr = inv.address;
+        }
+
+        docHtml += '<div class="page">';
+
+        // top meta row
+        docHtml += '<div class="meta-row">';
+        docHtml += '<div>' + dateStr + '</div>';
+        docHtml += '<div class="meta-center">Facture ' + invoiceCode + '</div>';
+        docHtml += '<div>1</div>'; // page number static 1
+        docHtml += '</div>';
+
+        // header blocks
+        docHtml += '<div class="header-row">';
+        docHtml += '<div class="header-box header-left">';
+        docHtml += '<div style="font-weight:700;margin-bottom:2mm;">La Palette Antony 97</div>';
+        docHtml += '<div>21 rue Leonard de Vinci</div>';
+        docHtml += '<div>92160 ANTONY</div>';
+        docHtml += '<div>Tél. 01 40 68 04 99</div>';
+        docHtml += '<div>Fax 01 40 68 11 15</div>';
+        docHtml += '</div>';
+
+        docHtml += '<div class="header-box header-right">';
+        docHtml += '<div class="label-row"><span class="label-key">CODE CLIENT</span><span>' + (inv.customerCode || '&nbsp;') + '</span></div>';
+        docHtml += '<div class="label-row"><span class="label-key">NUMERO</span><span>' + invoiceCode + '</span></div>';
+        docHtml += '<div class="label-row"><span class="label-key">DATE</span><span>' + (orderDate || '&nbsp;') + '</span></div>';
+        docHtml += '<div class="big-title">FACTURE</div>';
+        docHtml += '</div>';
+        docHtml += '</div>'; // header-row
+
+        // payment + QR + client band
+        docHtml += '<div class="band-row">';
+        docHtml += '<div class="band-col band-left">';
+        docHtml += '<div class="band-title">Mode de règlement</div>';
+        docHtml += '<div>' + (inv.paymentMode ? ('carte bancaire de ' + totalTTC.toFixed(2).replace('.', ',') + ' EUR') : 'carte bancaire (démo)') + '</div>';
+        docHtml += '<div class="small-box">Échéance</div>';
+        var refCmd = inv.publicOrderCode || inv.orderId || '';
+        docHtml += '<div class="small-box">Référence commande : ' + refCmd + '</div>';
+        docHtml += '</div>';
+
+        docHtml += '<div class="band-col band-middle">';
+        docHtml += '<div class="band-title">QR (démo)</div>';
+        docHtml += '<div class="qr-box"></div>';
+        docHtml += '<div>' + (inv.publicOrderCode || '') + '</div>';
+        docHtml += '</div>';
+
+        docHtml += '<div class="band-col band-right">';
+        docHtml += '<div class="band-title">Client</div>';
+        docHtml += '<div>' + (customerLabel || '&nbsp;') + '</div>';
+        if (addrStr) {
+          docHtml += '<div style="margin-top:1mm;">' + addrStr + '</div>';
+        }
+        if (inv.customerVatNumber) {
+          docHtml += '<div style="margin-top:1mm;">N° TVA : ' + inv.customerVatNumber + '</div>';
+        }
+        docHtml += '</div>';
+
+        docHtml += '</div>'; // band-row
+
+        // reference line under band
+        var baseDate = orderDate || (day + '/' + month + '/' + year);
+        var refLine = 'Facture comptoir n°' + invoiceCode + ' du ' + baseDate;
+        if (customerLabel) {
+          refLine += ' ' + customerLabel;
+        }
+        docHtml += '<div class="ref-line">' + refLine + '</div>';
+
+        // main items table
+        docHtml += '<table class="lines-table">';
+        docHtml += '<thead><tr>';
+        docHtml += '<th style="width:18%">Référence</th>';
+        docHtml += '<th> Désignation</th>';
+        docHtml += '<th style="width:6%" class="num">Qté</th>';
+        docHtml += '<th style="width:12%" class="num">Prix unit.</th>';
+        docHtml += '<th style="width:12%" class="num">Prix net</th>';
+        docHtml += '<th style="width:12%" class="num">Total HT</th>';
+        docHtml += '</tr></thead><tbody>';
+
+        if (inv.items && inv.items.length) {
+          inv.items.forEach(function (it) {
+            var ref = it.productCode || it.productId || '';
+            var label = it.productName || ('Produit #' + (it.productId || ''));
+            var unitTTC = Number(it.unitPrice || 0) || 0;
+            var unitHT = unitTTC / 1.2;
+            var qty = Number(it.quantity || 0) || 0;
+            var lineHT = unitHT * qty;
+            var lineNet = unitTTC * qty;
+            docHtml += '<tr>';
+            docHtml += '<td>' + ref + '</td>';
+            docHtml += '<td>' + label + '</td>';
+            docHtml += '<td class="num">' + qty + '</td>';
+            docHtml += '<td class="num">' + unitHT.toFixed(2).replace('.', ',') + '</td>';
+            docHtml += '<td class="num">' + lineNet.toFixed(2).replace('.', ',') + '</td>';
+            docHtml += '<td class="num">' + lineHT.toFixed(2).replace('.', ',') + '</td>';
+            docHtml += '</tr>';
+          });
+        } else {
+          docHtml += '<tr><td colspan="6">(Aucun article pour cette facture.)</td></tr>';
+        }
+
+        docHtml += '</tbody></table>';
+
+        // footer: VAT summary + totals box
+        docHtml += '<div class="footer-row">';
+        docHtml += '<div class="vat-summary">';
+        docHtml += '<div><strong>Récapitulatif TVA</strong></div>';
+        docHtml += '<table class="vat-table">';
+        docHtml += '<thead><tr><th>Base HT</th><th>% TVA</th><th>Montant TV</th></tr></thead><tbody>';
+        docHtml += '<tr><td>' + ht.toFixed(2).replace('.', ',') + '</td><td>' + tvaRate.toFixed(2).replace('.', ',') + '</td><td>' + tva.toFixed(2).replace('.', ',') + '</td></tr>';
+        docHtml += '</tbody></table>';
+        docHtml += '</div>';
+
+        docHtml += '<div class="totals-box">';
+        docHtml += '<div class="line"><span class="label">Total HT</span><span>' + ht.toFixed(2).replace('.', ',') + ' €</span></div>';
+        docHtml += '<div class="line"><span class="label">Montant TVA</span><span>' + tva.toFixed(2).replace('.', ',') + ' €</span></div>';
+        docHtml += '<div class="grand"><span class="label">Total TTC</span><span>' + totalTTC.toFixed(2).replace('.', ',') + ' €</span></div>';
+        docHtml += '</div>';
+        docHtml += '</div>'; // footer-row
+
+        // legal footer (static demo info)
+        docHtml += '<div class="legal">';
+        docHtml += 'SITE INTERNET www.la-palette.com – Code APE 4673B – N° identification TVA FR625 720 945 06 – N° Siret : 572 094 506 00100 Nanterre';
+        docHtml += '</div>';
+
+        docHtml += '</div>'; // page
+        docHtml += '<script>setTimeout(function(){window.print();},300);<' + '/script>';
+        docHtml += '</body></html>';
+
+        win.document.open();
+        win.document.write(docHtml);
+        win.document.close();
+      }
+
+      function init() {
+        var user = getCurrentUser();
+        if (!user) {
+          setStatus("Veuillez vous connecter pour voir vos factures (démo).", true);
+          if (listRoot) listRoot.innerHTML = '';
+          return;
+        }
+
+        var role = String(user.role || '').toUpperCase();
+
+        var urlParams = new URLSearchParams(window.location.search || '');
+        var initialOrderId = urlParams.get('orderId');
+
+        setStatus('Chargement de vos factures (démo)…', false);
+        fetch('http://localhost:3002/api/orders?t=' + Date.now())
+          .then(function (res) {
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            return res.json();
+          })
+          .then(function (rows) {
+            rows = Array.isArray(rows) ? rows : [];
+            var lowerEmail = user.email ? String(user.email).toLowerCase() : '';
+
+            invoices = rows
+              .filter(function (o) {
+                if (!o) return false;
+                if (role === 'CLIENT') {
+                  var mail = String(o.email || o.customerEmail || '').toLowerCase();
+                  if (!mail || mail !== lowerEmail) return false;
+                }
+                // For ADMIN (and other roles), no additional filter: see all orders
+                return true;
+              })
+              .map(function (o) {
+                return {
+                  orderId: o.orderId,
+                  publicOrderCode: o.publicOrderCode,
+                  totalAmount: o.totalAmount,
+                  status: o.status,
+                  orderDate: (o.createdAt || '').split('T')[0] || '',
+                  customerName: o.customerName,
+                  email: o.email || o.customerEmail,
+                  shopName: o.shopName,
+                  address: o.address,
+                  // enriched customer fields coming from backend join with customers table
+                  customerCode: o.customerCode,
+                  customerCompanyName: o.customerCompanyName,
+                  customerContactName: o.customerContactName,
+                  customerAddressLine1: o.customerAddressLine1,
+                  customerAddressLine2: o.customerAddressLine2,
+                  customerPostalCode: o.customerPostalCode,
+                  customerCity: o.customerCity,
+                  customerCountry: o.customerCountry,
+                  customerVatNumber: o.customerVatNumber,
+                  customerSiret: o.customerSiret,
+                  customerApeCode: o.customerApeCode,
+                  items: o.items || null // detailed items will be loaded on demand
+                };
+              });
+
+            setStatus(invoices.length ? '' : 'Aucune facture disponible pour le moment (démo).', false);
+            renderList();
+
+            if (initialOrderId) {
+              selectedInvoiceOrderId = Number(initialOrderId);
+              renderPreview();
+            }
+          })
+          .catch(function (err) {
+            console.error('Failed to load invoices (demo)', err);
+            setStatus('Erreur lors du chargement des factures (démo).', true);
+          });
+      }
+
+      init();
+    })();
+  </script>
+</body>
+</html>

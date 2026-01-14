@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Connexion – La Palette (démo)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Montserrat', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f5f5f5;
+    }
+    header {
+      background: #e0001a;
+      color: #fff;
+      padding: 0.75rem 1.25rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+    }
+    .container {
+      max-width: 420px;
+      margin: 2.5rem auto;
+      padding: 0 1rem;
+    }
+    .card {
+      background: #fff;
+      border-radius: 6px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      padding: 1.25rem 1.5rem 1.5rem;
+    }
+    h1 {
+      margin-top: 0;
+      font-size: 1.2rem;
+      margin-bottom: 0.75rem;
+    }
+    label {
+      display: block;
+      font-size: 0.85rem;
+      margin-bottom: 0.25rem;
+    }
+    input[type="email"],
+    input[type="password"] {
+      width: 100%;
+      padding: 0.4rem 0.5rem;
+      font-size: 0.95rem;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      margin-bottom: 0.75rem;
+      box-sizing: border-box;
+    }
+    button {
+      display: inline-block;
+      border: none;
+      background: #0070f3;
+      color: #fff;
+      padding: 0.4rem 0.75rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.95rem;
+    }
+    button:disabled {
+      opacity: 0.6;
+      cursor: default;
+    }
+    .status {
+      font-size: 0.85rem;
+      margin-top: 0.5rem;
+    }
+    .status.error {
+      color: #b71c1c;
+    }
+    .status.ok {
+      color: #1b5e20;
+    }
+    .hint {
+      font-size: 0.8rem;
+      color: #555;
+      margin-top: 0.75rem;
+    }
+    .hint-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 0.35rem;
+      font-size: 0.8rem;
+    }
+    .hint-table th,
+    .hint-table td {
+      padding: 0.15rem 0.25rem;
+      text-align: left;
+      vertical-align: top;
+    }
+    .hint-table th {
+      font-weight: 600;
+      color: #333;
+    }
+    .hint code {
+      font-size: 0.75rem;
+      background: #f0f0f0;
+      padding: 0.1rem 0.25rem;
+      border-radius: 3px;
+      display: inline-block;
+    }
+    #cart-header button {
+      border: none;
+      background: #0070f3;
+      color: #fff;
+      padding: 0.35rem 0.75rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+    @media (max-width: 768px) {
+      .container {
+        margin: 1rem auto;
+        padding: 0 0.75rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="lp-header-root"></div>
+  <div class="container">
+    <div class="card">
+      <h1>Se connecter</h1>
+      <p style="font-size:0.9rem; margin-top:0; margin-bottom:0.75rem;">Cette page de connexion protège les vues démo du back-office.</p>
+      <label for="account-type">Type de compte</label>
+      <select id="account-type" style="width:100%;padding:0.35rem 0.5rem;font-size:0.9rem;border-radius:4px;border:1px solid #ccc;box-sizing:border-box;margin-bottom:0.75rem;">
+        <option value="">Choisir un type de compte…</option>
+        <option value="CLIENT">Client démo</option>
+        <option value="ADMIN">Admin La Palette</option>
+        <option value="SHOP1">Magasin 1 – Antony</option>
+        <option value="SHOP2">Magasin 2 – Arcueil</option>
+        <option value="SHOP3">Magasin 3 – Bougival</option>
+        <option value="SHOP4">Magasin 4 – Boulogne</option>
+        <option value="SHOP5">Magasin 5 – Bourg la Reine</option>
+        <option value="SHOP6">Magasin 6 – Clichy</option>
+        <option value="SHOP7">Magasin 7 – Clichy sous bois</option>
+        <option value="SHOP8">Magasin 8 – Convention (Paris15e)</option>
+        <option value="SHOP9">Magasin 9 – Courbevoie</option>
+        <option value="SHOP10">Magasin 10 – Daumesnil (Paris12e)</option>
+        <option value="SHOP11">Magasin 11 – Joinville</option>
+        <option value="SHOP12">Magasin 12 – Le Perreux-sur-Marne</option>
+        <option value="SHOP13">Magasin 13 – Levallois</option>
+        <option value="SHOP14">Magasin 14 – Ormesson</option>
+        <option value="SHOP15">Magasin 15 – Pyrénées (Paris20e)</option>
+        <option value="SHOP16">Magasin 16 – Saint Ouen</option>
+        <option value="SHOP17">Magasin 17 – Saint-Maur</option>
+        <option value="SHOP18">Magasin 18 – St Antoine (Paris11e)</option>
+      </select>
+
+      <label for="email">Adresse e-mail</label>
+      <input id="email" type="email" autocomplete="username" />
+
+      <label for="password">Mot de passe</label>
+      <input id="password" type="password" autocomplete="current-password" />
+
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.5rem;font-size:0.85rem;">
+        <label style="display:flex;align-items:center;gap:0.35rem;cursor:pointer;">
+          <input id="remember-me" type="checkbox" style="margin:0;" />
+          <span>Se souvenir de moi (démo)</span>
+        </label>
+        <a href="reset-password.html" style="font-size:0.85rem;">Mot de passe oublié ?</a>
+      </div>
+
+      <button id="login-btn" type="button">Se connecter</button>
+      <div id="status" class="status" style="display:none;"></div>
+
+      <div class="hint">
+        <div><strong>Comptes de démo :</strong></div>
+        <div style="margin-top:0.35rem;">
+          <input id="demo-search" type="text" placeholder="Rechercher (type, e-mail)..." style="width:100%;padding:0.25rem 0.4rem;font-size:0.8rem;border-radius:4px;border:1px solid #ccc;box-sizing:border-box;" />
+        </div>
+        <table id="demo-table" class="hint-table" aria-label="Comptes de démo">
+          <thead>
+            <tr>
+              <th>Type</th>
+              <th>Adresse e-mail</th>
+              <th>Mot de passe</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Client</td>
+              <td><code>client@lapalette.demo</code></td>
+              <td><code>client123</code></td>
+            </tr>
+            <tr>
+              <td>Admin</td>
+              <td><code>admin@lapalette.demo</code></td>
+              <td><code>admin123</code></td>
+            </tr>
+            <tr>
+              <td>Magasin 1 – Antony</td>
+              <td><code>shop1@lapalette.demo</code></td>
+              <td><code>shop123</code></td>
+            </tr>
+            <tr>
+              <td>Magasin 2 – Arcueil</td>
+              <td><code>shop2@lapalette.demo</code></td>
+              <td><code>shop123</code></td>
+            </tr>
+            <tr>
+              <td>Magasin 3 – Bougival</td>
+              <td><code>shop3@lapalette.demo</code></td>
+              <td><code>shop123</code></td>
+            </tr>
+            <tr>
+              <td>Magasin 4 – Boulogne</td>
+              <td><code>shop4@lapalette.demo</code></td>
+              <td><code>shop123</code></td>
+            </tr>
+            <tr>
+              <td>Magasin 5 – Bourg la Reine</td>
+              <td><code>shop5@lapalette.demo</code></td>
+              <td><code>shop123</code></td>
+            </tr>
+            <tr>
+              <td>Magasin 6 – Clichy</td>
+              <td><code>shop6@lapalette.demo</code></td>
+              <td><code>shop123</code></td>
+            </tr>
+            <tr>
+              <td>Magasin 7 – Clichy sous bois</td>
+              <td><code>shop7@lapalette.demo</code></td>
+              <td><code>shop123</code></td>
+            </tr>
+            <tr>
+              <td>Magasin 8 – Convention (Paris15e)</td>
+              <td><code>shop8@lapalette.demo</code></td>
+              <td><code>shop123</code></td>
+            </tr>
+            <tr>
+              <td>Magasin 9 – Courbevoie</td>
+              <td><code>shop9@lapalette.demo</code></td>
+              <td><code>shop123</code></td>
+            </tr>
+            <tr>
+              <td>Magasin 10 – Daumesnil (Paris12e)</td>
+              <td><code>shop10@lapalette.demo</code></td>
+              <td><code>shop123</code></td>
+            </tr>
+            <tr>
+              <td>Magasin 11 – Joinville</td>
+              <td><code>shop11@lapalette.demo</code></td>
+              <td><code>shop123</code></td>
+            </tr>
+            <tr>
+              <td>Magasin 12 – Le Perreux-sur-Marne</td>
+              <td><code>shop12@lapalette.demo</code></td>
+              <td><code>shop123</code></td>
+            </tr>
+            <tr>
+              <td>Magasin 13 – Levallois</td>
+              <td><code>shop13@lapalette.demo</code></td>
+              <td><code>shop123</code></td>
+            </tr>
+            <tr>
+              <td>Magasin 14 – Ormesson</td>
+              <td><code>shop14@lapalette.demo</code></td>
+              <td><code>shop123</code></td>
+            </tr>
+            <tr>
+              <td>Magasin 15 – Pyrénées (Paris20e)</td>
+              <td><code>shop15@lapalette.demo</code></td>
+              <td><code>shop123</code></td>
+            </tr>
+            <tr>
+              <td>Magasin 16 – Saint Ouen</td>
+              <td><code>shop16@lapalette.demo</code></td>
+              <td><code>shop123</code></td>
+            </tr>
+            <tr>
+              <td>Magasin 17 – Saint-Maur</td>
+              <td><code>shop17@lapalette.demo</code></td>
+              <td><code>shop123</code></td>
+            </tr>
+            <tr>
+              <td>Magasin 18 – St Antoine (Paris11e)</td>
+              <td><code>shop18@lapalette.demo</code></td>
+              <td><code>shop123</code></td>
+            </tr>
+          </tbody>
+        </table>
+        <div style="margin-top:0.75rem;">
+          Pas encore de compte démo ?
+          <a id="go-register-link" href="register.html">Créer un compte (démo)</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script defer src="header.js"></script>
+  <script defer src="header.shared.js"></script>
+
+  <script>
+    (function () {
+      var emailInput = document.getElementById('email');
+      var passwordInput = document.getElementById('password');
+      var accountTypeSelect = document.getElementById('account-type');
+      var rememberMeCheckbox = document.getElementById('remember-me');
+      var loginBtn = document.getElementById('login-btn');
+      var statusEl = document.getElementById('status');
+      var demoSearchInput = document.getElementById('demo-search');
+      var demoTable = document.getElementById('demo-table');
+
+      function setStatus(msg, type) {
+        if (!statusEl) return;
+        statusEl.textContent = msg || '';
+        statusEl.style.display = msg ? 'block' : 'none';
+        statusEl.className = 'status' + (type ? ' ' + type : '');
+      }
+
+      function redirectForRole(role) {
+        var r = String(role || '').toUpperCase();
+        if (r === 'SHOP' || r === 'ADMIN') {
+          window.location.href = 'orders.html';
+        } else if (r === 'DELIVERY') {
+          window.location.href = 'delivery-list.html';
+        } else if (r === 'CLIENT') {
+          window.location.href = 'index.html';
+        } else {
+          window.location.href = 'index.html';
+        }
+      }
+
+      function setupDemoSearch() {
+        if (!demoSearchInput || !demoTable) return;
+        var tbody = demoTable.tBodies && demoTable.tBodies[0];
+        if (!tbody) return;
+        demoSearchInput.addEventListener('input', function () {
+          var q = (demoSearchInput.value || '').toLowerCase();
+          var rows = tbody.rows;
+          for (var i = 0; i < rows.length; i++) {
+            var row = rows[i];
+            var typeCell = row.cells[0];
+            var emailCell = row.cells[1];
+            var text = '';
+            if (typeCell) {
+              text += ' ' + (typeCell.textContent || '');
+            }
+            if (emailCell) {
+              text += ' ' + (emailCell.textContent || '');
+            }
+            text = text.toLowerCase();
+            if (!q || text.indexOf(q) !== -1) {
+              row.style.display = '';
+            } else {
+              row.style.display = 'none';
+            }
+          }
+        });
+      }
+
+      function loadRememberedAccount() {
+        try {
+          var raw = window.localStorage.getItem('lp_login_remember');
+          if (!raw) return;
+          var data = JSON.parse(raw);
+          if (!data || !data.email || !data.password) return;
+          if (accountTypeSelect && data.accountType) {
+            accountTypeSelect.value = data.accountType;
+          }
+          emailInput.value = data.email;
+          passwordInput.value = data.password;
+          if (rememberMeCheckbox) {
+            rememberMeCheckbox.checked = true;
+          }
+        } catch (e) {
+          console.error('Erreur lors du chargement du compte mémorisé (démo):', e);
+        }
+      }
+
+      function setupAccountTypeSelect() {
+        if (!accountTypeSelect || !emailInput || !passwordInput) return;
+        accountTypeSelect.addEventListener('change', function () {
+          var v = accountTypeSelect.value || '';
+          if (!v) {
+            emailInput.value = '';
+            passwordInput.value = '';
+            return;
+          }
+          if (v === 'CLIENT') {
+            emailInput.value = 'client@lapalette.demo';
+            passwordInput.value = 'client123';
+          } else if (v === 'ADMIN') {
+            emailInput.value = 'admin@lapalette.demo';
+            passwordInput.value = 'admin123';
+          } else if (v === 'DELIVERY') {
+            emailInput.value = 'delivery@lapalette.demo';
+            passwordInput.value = 'delivery123';
+          } else if (v.indexOf('SHOP') === 0) {
+            var num = v.replace('SHOP', '');
+            emailInput.value = 'shop' + num + '@lapalette.demo';
+            passwordInput.value = 'shop123';
+          }
+        });
+      }
+
+      if (loginBtn) {
+        loginBtn.addEventListener('click', function () {
+          var email = (emailInput.value || '').trim();
+          var password = passwordInput.value || '';
+          if (!email || !password) {
+            setStatus('Merci de saisir votre e-mail et votre mot de passe (démo).', 'error');
+            return;
+          }
+
+          loginBtn.disabled = true;
+          setStatus('Connexion en cours…', '');
+
+          fetch('http://localhost:3002/auth/login', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ email: email, password: password })
+          })
+            .then(function (resp) { return resp.json(); })
+            .then(function (data) {
+              loginBtn.disabled = false;
+              if (!data || !data.success || !data.token || !data.user) {
+                setStatus((data && data.message) || 'Échec de la connexion (démo).', 'error');
+                return;
+              }
+
+              try {
+                window.localStorage.setItem('lp_auth_token', data.token);
+                window.localStorage.setItem('lp_auth_user', JSON.stringify(data.user));
+                if (rememberMeCheckbox && rememberMeCheckbox.checked) {
+                  var accTypeVal = accountTypeSelect ? accountTypeSelect.value : '';
+                  window.localStorage.setItem('lp_login_remember', JSON.stringify({
+                    accountType: accTypeVal,
+                    email: email,
+                    password: password
+                  }));
+                } else {
+                  window.localStorage.removeItem('lp_login_remember');
+                }
+              } catch (e) {
+                console.error('Erreur lors du stockage des infos demo auth:', e);
+              }
+
+              setStatus('Connexion réussie (démo). Redirection…', 'ok');
+              setTimeout(function () {
+                redirectForRole(data.user.role);
+              }, 500);
+            })
+            .catch(function (err) {
+              console.error('Erreur lors de la requête de connexion (démo)', err);
+              loginBtn.disabled = false;
+              setStatus('Erreur de connexion (démo).', 'error');
+            });
+        });
+      }
+
+      setupDemoSearch();
+      setupAccountTypeSelect();
+      loadRememberedAccount();
+    })();
+  </script>
+</body>
+</html>

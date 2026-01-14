@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>La Palette – Commandes (Back-office démo)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f5f5f5;
+    }
+    header {
+      background: #e0001a;
+      color: #fff;
+      padding: 0.75rem 1.25rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+    }
+    .container {
+      max-width: 1100px;
+      margin: 0.75rem auto 2rem;
+      padding: 0 1rem;
+    }
+    h1 {
+      margin-top: 0.5rem;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .orders-new-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      font-size: 0.75rem;
+      background: #e30613;
+      color: #fff;
+      border-radius: 999px;
+      padding: 0.1rem 0.45rem;
+    }
+    .orders-new-badge-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #fff;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      border-radius: 6px;
+      overflow: hidden;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+      font-size: 0.9rem;
+    }
+    thead {
+      background: #fafafa;
+    }
+    th, td {
+      padding: 0.5rem 0.75rem;
+      border-bottom: 1px solid #eee;
+      text-align: left;
+      white-space: nowrap;
+    }
+    th:last-child, td:last-child {
+      text-align: right;
+    }
+    tr:last-child td {
+      border-bottom: none;
+    }
+    .code {
+      font-family: 'SFMono-Regular', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+    }
+    .tag {
+      display: inline-block;
+      padding: 0.1rem 0.4rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      background: #eee;
+    }
+    .tag-status {
+      background: #e3f2fd;
+      color: #0d47a1;
+    }
+    .tag-approval {
+      background: #fff3e0;
+      color: #e65100;
+    }
+    /* Badge styles used for status and payment (mobile shows icon-only) */
+    .badge { display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.1rem 0.45rem; border-radius: 999px; font-size: 0.75rem; }
+    .badge-icon { display: inline-block; font-size: 0.95em; margin-right: 0.25rem; }
+    .badge-text { display: inline; }
+    .small {
+      font-size: 0.8rem;
+      color: #666;
+    }
+    .detail-row {
+      background: #fafafa;
+    }
+    .detail-cell {
+      padding: 0.5rem 0.75rem 0.75rem;
+      font-size: 0.85rem;
+      text-align: left !important;
+    }
+    .btn-message {
+      display: inline-block;
+      padding: 0.25rem 0.6rem;
+      font-size: 0.8rem;
+      border-radius: 4px;
+      border: none;
+      background-color: #e30613;
+      color: #fff;
+      cursor: pointer;
+    }
+    .btn-message:hover {
+      background-color: #b9040f;
+    }
+    .wa-popup-backdrop {
+      position: relative;        /* inline inside detail cell */
+      margin-top: 0.75rem;
+      background: transparent;
+      display: none;             /* shown when a message box is opened */
+      align-items: stretch;
+      justify-content: flex-start;
+      pointer-events: auto;
+    }
+    .wa-popup {
+      width: 100%;
+      max-width: 720px;          /* bigger chat box */
+      max-height: 320px;
+      background: #f0f0f0;
+      border-radius: 12px 12px 0 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      margin: 0 auto;        /* centered under order detail */
+      pointer-events: auto;
+    }
+    .wa-header {
+      background: #075e54;
+      color: #fff;
+      padding: 0.5rem 0.75rem;
+      font-size: 0.85rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .wa-header-title {
+      font-weight: 600;
+    }
+    .wa-close {
+      cursor: pointer;
+      font-size: 1rem;
+    }
+    .wa-messages {
+      padding: 0.5rem;
+      flex: 1 1 auto;
+      overflow-y: auto;
+      background: #e5ddd5;
+      font-size: 0.8rem;
+    }
+    .wa-bubble {
+      display: inline-block;
+      padding: 0.35rem 0.6rem;
+      border-radius: 8px;
+      margin-bottom: 0.35rem;
+      max-width: 90%;
+      clear: both;
+    }
+    .wa-bubble-client {
+      background: #c8f7c5; /* received (client) – green */
+      float: left;
+    }
+    .wa-bubble-staff {
+      background: #cfe4ff; /* sent (staff) – blue */
+      float: right;
+    }
+    .wa-input {
+      padding: 0.4rem;
+      display: flex;
+      gap: 0.4rem;
+      background: #f0f0f0;
+    }
+    .wa-input textarea {
+      flex: 1 1 auto;
+      resize: none;
+      font-size: 0.8rem;
+      padding: 0.3rem;
+    }
+    .wa-input button {
+      background: #075e54;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      padding: 0.3rem 0.6rem;
+      font-size: 0.8rem;
+      cursor: pointer;
+    }
+    #cart-header button {
+      border: none;
+      background: #0070f3;
+      color: #fff;
+      padding: 0.35rem 0.75rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+    @media (max-width: 768px) {
+      /* Header layout controlled by shared header */
+      .container {
+        padding: 0 0.75rem;
+      }
+      /* Allow table content to wrap on small screens */
+      th, td {
+        white-space: normal;
+        padding: 0.4rem 0.5rem;
+        font-size: 0.85rem;
+        line-height: 1.3;
+      }
+      table { table-layout: fixed; }
+      /* Help long e-mails/strings wrap */
+      td:nth-child(4), th:nth-child(4) { word-break: break-all; }
+      .code { word-break: break-word; }
+      /* Stack the detail section columns vertically on small screens */
+      .detail-cell > div {
+        display: flex;
+        flex-direction: column !important;
+        gap: 0.75rem !important;
+      }
+      /* Provide some spacing for buttons inside detail */
+      .detail-cell button {
+        font-size: 0.85rem;
+        padding: 0.3rem 0.6rem;
+      }
+      /* On mobile keep badges compact with icon-only */
+      .badge-text { display: none; }
+      .badge-icon { margin-right: 0; }
+    }
+  </style>
+</head>
+<body>
+  <script defer src="header.js"></script>
+  <div class="container">
+    <h1 id="orders-title">
+      Dernières commandes
+      <span id="orders-new-badge" class="orders-new-badge" style="display:none;">
+        <span class="orders-new-badge-dot"></span>
+        Nouveaux messages
+      </span>
+    </h1>
+    <p class="small">Vue interne démo. Les données viennent directement de la base Neon (table <code>orders</code>).</p>
+    <div id="status" class="small" style="display:none;">Chargement des commandes...</div>
+    <div style="margin-top: 0.75rem; overflow-x: auto;">
+      <table id="orders-table" style="display:none;">
+        <thead>
+          <tr>
+            <th>Code</th>
+            <th>Date</th>
+            <th>Client</th>
+            <th>Email</th>
+            <th>Statut</th>
+            <th>Mode</th>
+            <th>Total (€)</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var loginBtn = document.getElementById('login-header-btn');
+      if (loginBtn) {
+        loginBtn.addEventListener('click', function () {
+          window.location.href = 'login.html';
+        });
+      }
+
+      var roleSelect = document.getElementById('role-header-select');
+      if (roleSelect) {
+        var initialRole = 'SHOP';
+        try {
+          var rawUser = window.localStorage.getItem('lp_auth_user');
+          if (rawUser) {
+            var u = JSON.parse(rawUser) || {};
+            if (u.role) {
+              var r = String(u.role).toUpperCase();
+              if (r === 'SHOP') initialRole = 'SHOP';
+              else if (r === 'ADMIN') initialRole = 'ADMIN';
+              else if (r === 'CLIENT') initialRole = 'CLIENT';
+            }
+          }
+        } catch (e) {}
+        roleSelect.value = initialRole;
+
+        roleSelect.addEventListener('change', function () {
+          var value = roleSelect.value;
+          if (!value) return;
+          if (value === 'CLIENT') {
+            window.location.href = 'index.html';
+          } else if (value === 'SHOP' || value === 'ADMIN') {
+            window.location.href = 'orders.html';
+          } else if (value === 'DELIVERY') {
+            window.location.href = 'delivery-list.html';
+          }
+        });
+      }
+
+      var presentationBtn = document.getElementById('presentation-header-btn');
+      if (presentationBtn) {
+        presentationBtn.addEventListener('click', function () {
+          window.location.href = 'presentation.html';
+        });
+      }
+
+      var myOrdersBtn = document.getElementById('myorders-header-btn');
+      if (myOrdersBtn) {
+        myOrdersBtn.addEventListener('click', function () {
+          window.location.href = 'index.html';
+        });
+      }
+
+      var profileBtn = document.getElementById('profile-header-btn');
+      if (profileBtn) {
+        profileBtn.addEventListener('click', function () {
+          window.location.href = 'profile.html';
+        });
+      }
+    })();
+  </script>
+
+  <script>
+    // Simple front-end auth guard (demo): only SHOP / ADMIN roles can view this page.
+    (function () {
+      var rawUser = null;
+      var user = null;
+      try {
+        rawUser = window.localStorage.getItem('lp_auth_user');
+        user = rawUser ? JSON.parse(rawUser) : null;
+      } catch (e) {
+        user = null;
+      }
+      var role = user && user.role ? String(user.role).toUpperCase() : '';
+      var allowed = role === 'SHOP' || role === 'ADMIN';
+      window.lpAuthAllowedOrders = allowed;
+      window.lpAuthUser = user; // keep for later filtering
+      if (!allowed) {
+        var container = document.querySelector('.container');
+        if (container) {
+          container.innerHTML = '<h1>Accès restreint (démo)</h1>' +
+            '<p style="font-size:0.9rem;">Cette page est réservée au magasin / administrateur La Palette (démo).</p>' +
+            '<p style="font-size:0.9rem;">Merci de vous connecter via la page <a href="login.html">Connexion (démo)</a>.</p>';
+        }
+      }
+    })();
+
+    let currentMessageOrder = null;
+
+    async function loadOrderMessages(orderId) {
+      try {
+        const res = await fetch('http://localhost:3002/api/orders/' + orderId + '/messages?t=' + Date.now());
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return await res.json();
+      } catch (err) {
+        console.error('Failed to load order messages (back-office)', err);
+        return [];
+      }
+    }
+
+    async function openMessagePopup(order, detailCell) {
+      currentMessageOrder = order || {};
+
+      if (!detailCell) return;
+
+      // Find or create the inline messenger container inside this detail cell
+      let backdrop = detailCell.querySelector('.wa-popup-backdrop');
+      if (!backdrop) {
+        backdrop = document.createElement('div');
+        backdrop.className = 'wa-popup-backdrop';
+        backdrop.innerHTML = `
+          <div class="wa-popup">
+            <div class="wa-header">
+              <span class="wa-header-title"></span>
+              <span class="wa-header-subtitle"></span>
+              <span class="wa-close">×</span>
+            </div>
+            <div class="wa-messages"></div>
+            <div class="wa-input">
+              <textarea></textarea>
+              <button type="button">Envoyer</button>
+            </div>
+          </div>
+        `;
+        detailCell.appendChild(backdrop);
+
+        const closeEl = backdrop.querySelector('.wa-close');
+        const sendBtn = backdrop.querySelector('button');
+        if (closeEl) {
+          closeEl.addEventListener('click', async function () {
+            // When closing the messenger, consider all messages read by staff
+            // for this order so that hasNewForStaff becomes false on refresh.
+            try {
+              if (currentMessageOrder && currentMessageOrder.orderId) {
+                await fetch('http://localhost:3002/api/orders/' + currentMessageOrder.orderId + '/read/staff', {
+                  method: 'POST'
+                });
+                // Refresh orders immediately so grey rows and badge update
+                if (typeof loadOrders === 'function') {
+                  loadOrders();
+                }
+              }
+            } catch (markErr) {
+              console.error('Failed to mark messages read (staff on close)', markErr);
+            }
+
+            backdrop.style.display = 'none';
+          });
+        }
+        if (sendBtn) {
+          sendBtn.addEventListener('click', function () {
+            sendMessageFromPopup(backdrop);
+          });
+        }
+      }
+
+      const titleEl = backdrop.querySelector('.wa-header-title');
+      const subtitleEl = backdrop.querySelector('.wa-header-subtitle');
+      const messagesEl = backdrop.querySelector('.wa-messages');
+      const inputEl = backdrop.querySelector('textarea');
+
+      if (!titleEl || !messagesEl || !inputEl) return;
+
+      titleEl.textContent = currentMessageOrder.customerName || 'Client';
+      const phone = currentMessageOrder.phone || '';
+      const email = currentMessageOrder.email || '';
+      if (subtitleEl) {
+        subtitleEl.textContent = [phone, email].filter(Boolean).join(' · ');
+      }
+
+      messagesEl.innerHTML = '';
+
+      // Load existing messages history from backend
+      const history = currentMessageOrder.orderId
+        ? await loadOrderMessages(currentMessageOrder.orderId)
+        : [];
+
+      if (!history || history.length === 0) {
+        const demoMsg = document.createElement('div');
+        demoMsg.className = 'wa-bubble wa-bubble-client';
+        demoMsg.textContent = 'Aucun message pour le moment. Commencez la conversation en envoyant un message.';
+        messagesEl.appendChild(demoMsg);
+      } else {
+        history.forEach(msg => {
+          const bubble = document.createElement('div');
+          const fromClient = String(msg.senderType).toUpperCase() === 'CLIENT';
+          bubble.className = 'wa-bubble ' + (fromClient ? 'wa-bubble-client' : 'wa-bubble-staff');
+          bubble.textContent = msg.message;
+          messagesEl.appendChild(bubble);
+        });
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+      }
+
+      inputEl.value = '';
+      backdrop.style.display = 'flex';
+    }
+
+    async function sendMessageFromPopup(container) {
+      if (!container) return;
+      const inputEl = container.querySelector('textarea');
+      const messagesEl = container.querySelector('.wa-messages');
+      if (!inputEl || !messagesEl) return;
+      const text = inputEl.value.trim();
+      if (!text) return;
+      const bubble = document.createElement('div');
+      bubble.className = 'wa-bubble wa-bubble-staff';
+      bubble.textContent = text;
+      messagesEl.appendChild(bubble);
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+
+      // Persist message via API (staff side)
+      try {
+        if (currentMessageOrder && currentMessageOrder.orderId) {
+          await fetch('http://localhost:3002/api/orders/' + currentMessageOrder.orderId + '/messages', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              senderType: 'STAFF',
+              senderName: 'Back-office La Palette',
+              message: text
+            })
+          });
+
+          // Optimistically mark that there are messages so the global badge/title
+          // update immediately without waiting for the next polling cycle.
+          const titleEl = document.getElementById('orders-title');
+          const badgeEl = document.getElementById('orders-new-badge');
+          if (titleEl) {
+            titleEl.style.color = '#666';
+          }
+          if (badgeEl) {
+            badgeEl.style.display = 'inline-flex';
+          }
+
+          // Refresh orders so message counts update immediately
+          if (typeof loadOrders === 'function') {
+            loadOrders();
+          }
+        }
+      } catch (err) {
+        console.error('Failed to send order message (back-office)', err);
+      }
+
+      inputEl.value = '';
+    }
+
+    async function loadOrders() {
+      const statusEl = document.getElementById('status');
+      const table = document.getElementById('orders-table');
+      const tbody = table.querySelector('tbody');
+
+      // Remember current scroll position so refreshing the table does not
+      // make the page jump for the user.
+      const prevScrollY = window.scrollY || window.pageYOffset || 0;
+
+      statusEl.textContent = 'Chargement des commandes...';
+
+      try {
+        const res = await fetch('http://localhost:3002/api/orders?t=' + Date.now());
+        if (!res.ok) {
+          throw new Error('HTTP ' + res.status);
+        }
+        let orders = await res.json();
+
+        // If logged in as SHOP with a shopId, only show orders for that shop.
+        try {
+          var u = window.lpAuthUser || null;
+          var r = u && u.role ? String(u.role).toUpperCase() : '';
+          var sId = u && typeof u.shopId !== 'undefined' && u.shopId !== null
+            ? Number(u.shopId)
+            : null;
+          if (r === 'SHOP' && sId && Array.isArray(orders)) {
+            orders = orders.filter(function (o) {
+              if (!o || typeof o.shopId === 'undefined' || o.shopId === null) {
+                return false; // hide orders not associated to a shop in this demo
+              }
+              return Number(o.shopId) === sId;
+            });
+          }
+        } catch (filterErr) {
+          console.error('Error while filtering orders by shop (demo)', filterErr);
+        }
+
+        // Show global "new messages" indicator only if there are NEW messages for staff
+        const anyWithMessages = Array.isArray(orders) && orders.some(o => o.hasNewForStaff);
+        const titleEl = document.getElementById('orders-title');
+        const badgeEl = document.getElementById('orders-new-badge');
+        if (titleEl) {
+          titleEl.style.color = anyWithMessages ? '#666' : '#000';
+        }
+        if (badgeEl) {
+          badgeEl.style.display = anyWithMessages ? 'inline-flex' : 'none';
+        }
+
+        if (!Array.isArray(orders) || orders.length === 0) {
+          statusEl.textContent = 'Aucune commande pour le moment.';
+          return;
+        }
+
+        tbody.innerHTML = '';
+
+        orders.forEach(o => {
+          const tr = document.createElement('tr');
+
+          // Grey background only for orders that have NEW messages for staff
+          if (o.hasNewForStaff) {
+            tr.style.backgroundColor = '#e0e0e0';
+          }
+
+          const date = o.createdAt ? new Date(o.createdAt) : null;
+          const dateStr = date
+            ? date.toLocaleDateString('fr-FR') + ' ' + date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+            : '';
+
+          const statusText = o.status || '';
+          const paymentMode = o.paymentMode || '';
+          // Icons for compact mobile display
+          const sUp = String(statusText).toUpperCase();
+          let statusIcon = '⏳';
+          if (sUp.indexOf('CANCEL') !== -1 || sUp.indexOf('ANNUL') !== -1) statusIcon = '✖';
+          else if (sUp.indexOf('AWAITING_PAYMENT') !== -1) statusIcon = '💵';
+          else if (sUp.indexOf('PAID_PREPARE_ORDER') !== -1) statusIcon = '🚗';
+          else if (sUp.indexOf('PAID') !== -1 || sUp.indexOf('COMPLETED') !== -1 || sUp.indexOf('LIVR') !== -1) statusIcon = '✓';
+          // Colors for status badge (COMPLETED => green bg)
+          let statusBg = '#e3f2fd';
+          let statusColor = '#0d47a1';
+          if (sUp.indexOf('PAID_PREPARE_ORDER') !== -1) {
+            statusBg = '#fff3cd';
+            statusColor = '#856404';
+          } else if (sUp.indexOf('COMPLETED') !== -1 || sUp.indexOf('PAID') !== -1 || sUp.indexOf('LIVR') !== -1) {
+            statusBg = '#e8f5e9';
+            statusColor = '#1b5e20';
+          } else if (sUp.indexOf('CANCEL') !== -1 || sUp.indexOf('ANNUL') !== -1) {
+            statusBg = '#ffebee';
+            statusColor = '#b71c1c';
+          }
+          const pUp = String(paymentMode).toUpperCase();
+          let payIcon = '🖥️';
+          if (pUp === 'CREDIT') payIcon = '💳';
+          else if (pUp === 'PAY_IN_SHOP') payIcon = '🏬';
+          // Payment badge colors (red for PAY_IN_SHOP)
+          let payBg = '#f3e5f5';
+          let payColor = '#4a148c';
+          if (pUp === 'PAY_IN_SHOP') { payBg = '#e30613'; payColor = '#fff'; }
+
+          tr.innerHTML = `
+            <td class="code">${o.publicOrderCode || o.orderId || ''}</td>
+            <td>${dateStr}</td>
+            <td>${o.customerName || ''}</td>
+            <td>${o.email || ''}</td>
+            <td>
+              <span class="badge tag-status" style="background:${statusBg};color:${statusColor};"><span class="badge-icon" aria-hidden="true">${statusIcon}</span><span class="badge-text">${statusText}</span></span>
+              ${o.requiresApproval ? '<span class="tag tag-approval" style="margin-left:4px;">Approbation</span>' : ''}
+              ${o.hasNewForStaff
+                ? '<div class="small" style="margin-top:0.15rem; display:inline-flex; align-items:center; gap:0.25rem;"><span style="width:6px;height:6px;border-radius:50%;background:#e30613;display:inline-block;"></span><span class="badge-text">Messages</span></div>'
+                : ''}
+            </td>
+            <td><span class="badge" style="background:${payBg};color:${payColor};"><span class="badge-icon" aria-hidden="true">${payIcon}</span><span class="badge-text">${paymentMode}</span></span></td>
+            <td style="text-align: right;">${Number(o.totalAmount || 0).toFixed(2)}</td>
+          `;
+
+          tr.addEventListener('click', async () => {
+            // Toggle detail row just below this order row
+            const next = tr.nextSibling;
+            if (next && next.getAttribute && next.getAttribute('data-detail-for') === String(o.orderId)) {
+              tbody.removeChild(next);
+              return;
+            }
+
+            // Remove any existing detail row elsewhere
+            Array.from(tbody.querySelectorAll('tr[data-detail-for]')).forEach(r => tbody.removeChild(r));
+
+            const detailRow = document.createElement('tr');
+            detailRow.className = 'detail-row';
+            detailRow.setAttribute('data-detail-for', String(o.orderId));
+            const detailCell = document.createElement('td');
+            detailCell.className = 'detail-cell';
+            detailCell.colSpan = 7;
+            detailCell.textContent = 'Chargement du détail de la commande...';
+            detailRow.appendChild(detailCell);
+            tbody.insertBefore(detailRow, tr.nextSibling);
+
+            try {
+              const res = await fetch('http://localhost:3002/api/orders/' + o.orderId + '?t=' + Date.now());
+              if (!res.ok) {
+                throw new Error('HTTP ' + res.status);
+              }
+              const data = await res.json();
+              const order = data.order || {};
+              const items = data.items || [];
+
+              const dateDetail = order.createdAt ? new Date(order.createdAt) : null;
+              const dateDetailStr = dateDetail
+                ? dateDetail.toLocaleDateString('fr-FR') + ' ' + dateDetail.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+                : '';
+
+              let html = '';
+              html += '<div style="display:flex; gap:1.5rem; align-items:flex-start;">';
+
+              // Column 1: articles + total
+              html += '<div style="flex:1 1 0;">';
+              html += '<p><strong>Articles :</strong></p>';
+              if (items.length === 0) {
+                html += '<div style="margin-left:0.75rem;">(Aucun article trouvé pour cette commande.)</div>';
+              } else {
+                html += '<ul style="margin:0.25rem 0 0.25rem 1.25rem;">' +
+                  items.map(it => {
+                    const label = it.productName || `Produit #${it.productId}`;
+                    return `<li>${label} – Qté ${it.quantity} × €${Number(it.unitPrice || 0).toFixed(2)}</li>`;
+                  }).join('') +
+                  '</ul>';
+              }
+              html += `<p style="margin-top:0.35rem;"><strong>Total :</strong> €${Number(order.totalAmount || 0).toFixed(2)}</p>`;
+              html += '</div>';
+
+              // Column 2: contact info + actions (stock / preparation / livraison)
+              html += '<div style="flex:1 1 0;">';
+              html += '<p><strong>Contact :</strong></p>';
+              html += `<p>${order.customerName || ''}${order.email ? ' – ' + order.email : ''}</p>`;
+              html += `<p>${order.phone ? 'Tél : ' + order.phone : ''}</p>`;
+              if (order.address) {
+                html += `<p>Adresse : ${order.address}</p>`;
+              }
+              if (order.status === 'PENDING_STOCK_CONFIRMATION') {
+                html += '<p style="margin-top:0.5rem;"><button type="button" class="btn-stock-confirm">Confirmer le stock (démo)</button></p>';
+              } else if (order.status === 'PAID_PREPARE_ORDER') {
+                html += '<p style="margin-top:0.5rem;"><button type="button" class="btn-start-prepare">Lancer la préparation (démo)</button></p>';
+              } else if (order.status === 'PREPARING_ORDER') {
+                html += '<p style="margin-top:0.5rem;"><button type="button" class="btn-ready-delivery">Prêt pour livraison (démo)</button></p>';
+              }
+              html += '</div>';
+
+              // Column 3: messagerie
+              html += '<div style="flex:1 1 0;">';
+              html += '<p><strong>Messagerie :</strong></p>';
+              html += '<p style="font-size:0.8rem; color:#555;">Historique et échanges liés à cette commande.</p>';
+              html += '<p><button type="button" class="btn-message">Ouvrir la messagerie</button></p>';
+              html += '</div>';
+
+              html += '</div>';
+
+              detailCell.innerHTML = html;
+
+              const msgBtn = detailCell.querySelector('.btn-message');
+              if (msgBtn) {
+                msgBtn.addEventListener('click', function (e) {
+                  e.stopPropagation();
+                  openMessagePopup(order, detailCell);
+                });
+              }
+
+              const stockBtn = detailCell.querySelector('.btn-stock-confirm');
+              if (stockBtn) {
+                stockBtn.addEventListener('click', async function (e) {
+                  e.stopPropagation();
+                  try {
+                    const resConfirm = await fetch('http://localhost:3002/api/orders/' + order.orderId + '/stock-confirm', {
+                      method: 'POST'
+                    });
+                    if (!resConfirm.ok) {
+                      throw new Error('HTTP ' + resConfirm.status);
+                    }
+                    if (typeof loadOrders === 'function') {
+                      loadOrders();
+                    }
+                  } catch (errConfirm) {
+                    console.error('Failed to confirm stock for order', errConfirm);
+                    alert('Erreur lors de la confirmation de stock (d\u00e9mo).');
+                  }
+                });
+              }
+
+              const prepareBtn = detailCell.querySelector('.btn-start-prepare');
+              if (prepareBtn) {
+                prepareBtn.addEventListener('click', async function (e) {
+                  e.stopPropagation();
+                  try {
+                    const resPrep = await fetch('http://localhost:3002/api/orders/' + order.orderId + '/prepare', {
+                      method: 'POST'
+                    });
+                    if (!resPrep.ok) {
+                      throw new Error('HTTP ' + resPrep.status);
+                    }
+                    if (typeof loadOrders === 'function') {
+                      loadOrders();
+                    }
+                    // Ouvrir la page de préparation dédiée pour cette commande (démo)
+                    window.location.href = 'prepare.html?orderId=' + encodeURIComponent(order.orderId);
+                  } catch (errPrep) {
+                    console.error('Failed to mark order as preparing', errPrep);
+                    alert('Erreur lors du passage en pr\u00e9paration (d\u00e9mo).');
+                  }
+                });
+              }
+
+              const readyBtn = detailCell.querySelector('.btn-ready-delivery');
+              if (readyBtn) {
+                readyBtn.addEventListener('click', async function (e) {
+                  e.stopPropagation();
+                  try {
+                    const resReady = await fetch('http://localhost:3002/api/orders/' + order.orderId + '/ready-for-delivery', {
+                      method: 'POST'
+                    });
+                    if (!resReady.ok) {
+                      throw new Error('HTTP ' + resReady.status);
+                    }
+                    if (typeof loadOrders === 'function') {
+                      loadOrders();
+                    }
+                  } catch (errReady) {
+                    console.error('Failed to mark order as ready for delivery', errReady);
+                    alert('Erreur lors du passage en pr\u00eat pour livraison (d\u00e9mo).');
+                  }
+                });
+              }
+            } catch (err) {
+              console.error('Failed to load order detail (back-office)', err);
+              detailCell.textContent = 'Erreur lors du chargement du détail de la commande.';
+            }
+          });
+
+          tbody.appendChild(tr);
+        });
+
+        // Restore scroll position so the screen does not move after refresh
+        window.scrollTo(0, prevScrollY);
+
+        table.style.display = '';
+        statusEl.textContent = '';
+      } catch (err) {
+        console.error('Failed to load orders', err);
+        statusEl.textContent = "Erreur lors du chargement des commandes (démo).";
+      }
+    }
+
+    // Initial load + faster polling so new-message badge and counts stay up to date.
+    // When a detail row is open (tr[data-detail-for]), pause polling so the
+    // detail + messenger do not disappear immediately.
+    if (window.lpAuthAllowedOrders !== false) {
+      loadOrders();
+    }
+    setInterval(function () {
+      var tbody = document.querySelector('#orders-table tbody');
+      if (tbody && tbody.querySelector('tr[data-detail-for]')) {
+        return; // keep current detail visible
+      }
+      if (window.lpAuthAllowedOrders !== false) {
+        loadOrders();
+      }
+    }, 5000);
+  </script>
+</body>
+</html>

@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Préparation commande – La Palette (démo)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    #cart-header button {
+      border: none;
+      background: #0070f3;
+      color: #fff;
+      padding: 0.35rem 0.75rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; margin: 0; background: #f5f5f5;">
+  <script defer src="header.js"></script>
+  <script defer src="header.shared.js"></script>
+  <main style="max-width:900px;margin:1.25rem auto 2rem;padding:0 1rem;">
+    <div id="panel" style="background:#fff;border-radius:6px;box-shadow:0 2px 4px rgba(0,0,0,0.06);padding:1rem;">
+      <h1 style="margin-top:0;font-size:1.3rem;">Préparation de la commande</h1>
+      <p id="status">Chargement de la commande...</p>
+      <div id="content" style="display:none;"></div>
+    </div>
+  </main>
+  <script>
+    (function () {
+      var loginBtn = document.getElementById('login-header-btn');
+      if (loginBtn) {
+        loginBtn.addEventListener('click', function () {
+          window.location.href = 'login.html';
+        });
+      }
+
+      var roleSelect = document.getElementById('role-header-select');
+      if (roleSelect) {
+        var initialRole = 'SHOP';
+        try {
+          var rawUser = window.localStorage.getItem('lp_auth_user');
+          if (rawUser) {
+            var u = JSON.parse(rawUser) || {};
+            if (u.role) {
+              var r = String(u.role).toUpperCase();
+              if (r === 'SHOP') initialRole = 'SHOP';
+              else if (r === 'ADMIN') initialRole = 'ADMIN';
+              else if (r === 'CLIENT') initialRole = 'CLIENT';
+            }
+          }
+        } catch (e) {}
+        roleSelect.value = initialRole;
+
+        roleSelect.addEventListener('change', function () {
+          var value = roleSelect.value;
+          if (!value) return;
+          if (value === 'CLIENT') {
+            window.location.href = 'index.html';
+          } else if (value === 'SHOP' || value === 'ADMIN') {
+            window.location.href = 'orders.html';
+          } else if (value === 'DELIVERY') {
+            window.location.href = 'delivery-list.html';
+          }
+        });
+      }
+
+      var presentationBtn = document.getElementById('presentation-header-btn');
+      if (presentationBtn) {
+        presentationBtn.addEventListener('click', function () {
+          window.location.href = 'presentation.html';
+        });
+      }
+
+      var myOrdersBtn = document.getElementById('myorders-header-btn');
+      if (myOrdersBtn) {
+        myOrdersBtn.addEventListener('click', function () {
+          window.location.href = 'orders.html';
+        });
+      }
+
+      var profileBtn = document.getElementById('profile-header-btn');
+      if (profileBtn) {
+        profileBtn.addEventListener('click', function () {
+          window.location.href = 'profile.html';
+        });
+      }
+
+    })();
+  </script>
+
+  <script>
+    (function () {
+      // Simple front-end auth guard (demo): only SHOP / ADMIN roles can view this page.
+      var rawUser = null;
+      var user = null;
+      try {
+        rawUser = window.localStorage.getItem('lp_auth_user');
+        user = rawUser ? JSON.parse(rawUser) : null;
+      } catch (e) {
+        user = null;
+      }
+      var role = user && user.role ? String(user.role).toUpperCase() : '';
+      var allowed = role === 'SHOP' || role === 'ADMIN';
+      window.lpAuthUser = user;
+      if (!allowed) {
+        document.body.innerHTML = '<header style="background:#e0001a;color:#fff;padding:0.75rem 1.25rem;font-weight:600;letter-spacing:0.03em;">La Palette – Préparation commande (démo)</header>' +
+          '<main style="max-width:900px;margin:1.25rem auto 2rem;padding:0 1rem;">' +
+          '<div style="background:#fff;border-radius:6px;box-shadow:0 2px 4px rgba(0,0,0,0.06);padding:1rem;">' +
+          '<h1 style="margin-top:0;font-size:1.3rem;">Accès restreint (démo)</h1>' +
+          '<p>Cette page est réservée au magasin / administrateur La Palette (démo).</p>' +
+          '<p>Merci de vous connecter via la page <a href="login.html">Connexion (démo)</a>.</p>' +
+          '</div></main>';
+        return;
+      }
+
+      function getOrderIdFromUrl() {
+        var params = new URLSearchParams(window.location.search || '');
+        var id = params.get('orderId');
+        return id ? Number(id) : null;
+      }
+
+      var statusEl = document.getElementById('status');
+      var contentEl = document.getElementById('content');
+      var orderId = getOrderIdFromUrl();
+      if (!orderId) {
+        statusEl.textContent = "Identifiant de commande manquant dans l'URL (démo).";
+        statusEl.style.color = '#b71c1c';
+        return;
+      }
+
+      function render(order, items) {
+        var html = '';
+        html += '<p><strong>Commande :</strong> ' + (order.publicOrderCode || order.orderId) + '</p>';
+        html += '<p><strong>Client :</strong> ' + (order.customerName || '') + (order.email ? ' – ' + order.email : '') + '</p>';
+        if (order.address) {
+          html += '<p><strong>Adresse :</strong> ' + order.address + '</p>';
+        }
+        html += '<p><strong>Statut actuel :</strong> ' + (order.status || '') + '</p>';
+
+        html += '<h2 style="margin-top:1rem;font-size:1.05rem;">Articles à préparer</h2>';
+        if (!items || !items.length) {
+          html += '<p>(Aucun article trouvé pour cette commande.)</p>';
+        } else {
+          html += '<ul style="margin-left:1.25rem;">';
+          items.forEach(function (it) {
+            var label = it.productName || ('Produit #' + it.productId);
+            html += '<li>' + label + ' – Qté ' + it.quantity + ' × €' + Number(it.unitPrice || 0).toFixed(2) + '</li>';
+          });
+          html += '</ul>';
+        }
+        html += '<p style="margin-top:0.35rem;"><strong>Total :</strong> €' + Number(order.totalAmount || 0).toFixed(2) + '</p>';
+
+        // Action: ready for delivery if appropriate
+        var s = String(order.status || '').toUpperCase();
+        if (s === 'PREPARING_ORDER' || s === 'PAID_PREPARE_ORDER') {
+          html += '<div style="margin-top:0.75rem;padding:0.5rem;background:#e3f2fd;border-radius:4px;font-size:0.9rem;">';
+          html += '<p style="margin-top:0;margin-bottom:0.35rem;">Lorsque la commande est prête, cliquez sur le bouton ci-dessous (démo).</p>';
+          html += '<button id="btn-ready" type="button" style="background:#0070f3;color:#fff;border:none;border-radius:4px;padding:0.35rem 0.7rem;font-size:0.9rem;cursor:pointer;">Marquer comme prête pour livraison (démo)</button>';
+          html += '</div>';
+        } else if (s === 'READY_FOR_DELIVERY') {
+          html += '<p style="margin-top:0.75rem;color:#1b5e20;"><strong>Cette commande est déjà marquée \"Prête pour livraison\" (démo).</strong></p>';
+        } else if (s === 'COMPLETED') {
+          html += '<p style="margin-top:0.75rem;color:#1b5e20;"><strong>Commande terminée (livraison confirmée).</strong></p>';
+        }
+
+        contentEl.innerHTML = html;
+        contentEl.style.display = 'block';
+        statusEl.textContent = '';
+
+        var readyBtn = document.getElementById('btn-ready');
+        if (readyBtn) {
+          readyBtn.addEventListener('click', function () {
+            statusEl.textContent = 'Enregistrement du statut \"Prête pour livraison\" (démo)...';
+            fetch('http://localhost:3002/api/orders/' + order.orderId + '/ready-for-delivery', {
+              method: 'POST'
+            })
+              .then(function (res) {
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                return res.json();
+              })
+              .then(function () {
+                statusEl.textContent = '';
+                // Recharger les infos de commande pour voir le nouveau statut
+                load();
+              })
+              .catch(function (err) {
+                console.error('Failed to mark order ready for delivery (prepare page demo)', err);
+                statusEl.textContent = "Erreur lors du passage en prêt pour livraison (démo).";
+                statusEl.style.color = '#b71c1c';
+              });
+          });
+        }
+      }
+
+      function load() {
+        statusEl.textContent = 'Chargement de la commande...';
+        contentEl.style.display = 'none';
+        fetch('http://localhost:3002/api/orders/' + orderId + '?t=' + Date.now())
+          .then(function (res) {
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            return res.json();
+          })
+          .then(function (data) {
+            if (!data || !data.order) {
+              statusEl.textContent = 'Commande introuvable (démo).';
+              statusEl.style.color = '#b71c1c';
+              return;
+            }
+
+            // If logged in as SHOP, ensure this order belongs to the same shop.
+            try {
+              var u = window.lpAuthUser || null;
+              var r = u && u.role ? String(u.role).toUpperCase() : '';
+              var sId = u && typeof u.shopId !== 'undefined' && u.shopId !== null
+                ? Number(u.shopId)
+                : null;
+              if (r === 'SHOP' && sId && data.order && typeof data.order.shopId !== 'undefined' && data.order.shopId !== null) {
+                if (Number(data.order.shopId) !== sId) {
+                  statusEl.textContent = 'Cette commande appartient à un autre magasin (démo).';
+                  statusEl.style.color = '#b71c1c';
+                  return;
+                }
+              }
+            } catch (guardErr) {
+              console.error('Error while enforcing shop restriction on prepare page (demo)', guardErr);
+            }
+
+            render(data.order, data.items || []);
+          })
+          .catch(function (err) {
+            console.error('Failed to load order on prepare page (demo)', err);
+            statusEl.textContent = "Erreur lors du chargement de la commande (démo).";
+            statusEl.style.color = '#b71c1c';
+          });
+      }
+
+      load();
+    })();
+  </script>
+</body>
+</html>

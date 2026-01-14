@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Mon profil – La Palette (démo)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f5f5f5;
+    }
+    header {
+      background: #e0001a;
+      color: #fff;
+      padding: 0.75rem 1.25rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+    }
+    .container {
+      max-width: 720px;
+      margin: 1.5rem auto;
+      padding: 0 1rem;
+    }
+    .card {
+      background: #fff;
+      border-radius: 6px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      padding: 1.25rem 1.5rem 1.5rem;
+      margin-bottom: 1rem;
+      font-size: 0.9rem;
+    }
+    h1 {
+      margin-top: 0;
+      font-size: 1.3rem;
+      margin-bottom: 0.75rem;
+    }
+    h2 {
+      margin-top: 0;
+      font-size: 1.05rem;
+      margin-bottom: 0.5rem;
+    }
+    label {
+      display: block;
+      font-size: 0.85rem;
+      margin-top: 0.5rem;
+      margin-bottom: 0.15rem;
+    }
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"],
+    input[type="password"],
+    textarea {
+      width: 100%;
+      padding: 0.4rem 0.5rem;
+      font-size: 0.9rem;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+    textarea {
+      resize: vertical;
+      min-height: 60px;
+    }
+    button {
+      border: none;
+      background: #0070f3;
+      color: #fff;
+      padding: 0.4rem 0.8rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      margin-top: 0.75rem;
+    }
+    button:disabled {
+      opacity: 0.6;
+      cursor: default;
+    }
+    .status {
+      margin-top: 0.5rem;
+      font-size: 0.85rem;
+    }
+    .status.error {
+      color: #b71c1c;
+    }
+    .status.ok {
+      color: #1b5e20;
+    }
+    .credit-line {
+      margin: 0.15rem 0;
+    }
+    .credit-amount {
+      font-weight: 600;
+    }
+    .back-link {
+      display: inline-block;
+      margin-top: 0.75rem;
+      font-size: 0.85rem;
+      text-decoration: none;
+      color: #0070f3;
+    }
+    #cart-header button {
+      border: none;
+      background: #0070f3;
+      color: #fff;
+      padding: 0.35rem 0.75rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+  <script defer src="header.shared.js"></script>
+  <div class="container">
+    <div class="card" id="profile-card">
+      <h1>Mon profil (démo)</h1>
+      <p>Ces informations sont stockées uniquement dans votre navigateur pour la démonstration.</p>
+
+      <label for="profile-name">Nom complet</label>
+      <input id="profile-name" type="text" />
+
+      <label for="profile-email">Email</label>
+      <input id="profile-email" type="email" readonly />
+
+      <label for="profile-phone">Téléphone</label>
+      <input id="profile-phone" type="tel" />
+
+      <label for="profile-company">Société</label>
+      <input id="profile-company" type="text" />
+
+      <label for="profile-address">Adresse</label>
+      <textarea id="profile-address"></textarea>
+
+      <label for="profile-postal-code">Code postal</label>
+      <input id="profile-postal-code" type="text" />
+
+      <label for="profile-city">Ville</label>
+      <input id="profile-city" type="text" />
+
+      <label for="profile-country">Pays</label>
+      <input id="profile-country" type="text" />
+
+      <label for="profile-customer-code">Code client (interne)</label>
+      <input id="profile-customer-code" type="text" />
+
+      <label for="profile-vat">N° de TVA</label>
+      <input id="profile-vat" type="text" />
+
+      <label for="profile-siret">N° SIRET</label>
+      <input id="profile-siret" type="text" />
+
+      <label for="profile-ape">Code APE</label>
+      <input id="profile-ape" type="text" />
+
+      <button id="profile-save-btn" type="button">Enregistrer mes informations (démo)</button>
+      <div id="profile-status" class="status"></div>
+    </div>
+
+    <div class="card" id="credit-card">
+      <h2>Crédit client (démo)</h2>
+      <p class="credit-line">Crédit autorisé : <span id="credit-limit" class="credit-amount">€0</span></p>
+      <p class="credit-line">Montant utilisé : <span id="credit-used" class="credit-amount">€0</span></p>
+      <p class="credit-line">Crédit disponible : <span id="credit-available" class="credit-amount">€0</span></p>
+      <p style="font-size:0.8rem;color:#555;margin-top:0.5rem;">Ces montants sont calculés à partir de vos commandes en mode « Compte client / crédit » (démo).</p>
+      <div id="credit-status" class="status"></div>
+    </div>
+
+    <div class="card" id="password-card">
+      <h2>Changer mon mot de passe (démo)</h2>
+      <p>Ce changement utilise le mécanisme de réinitialisation de mot de passe de la démo. Les mots de passe sont perdus au redémarrage du serveur.</p>
+
+      <label for="old-password">Ancien mot de passe</label>
+      <input id="old-password" type="password" autocomplete="current-password" />
+
+      <label for="new-password">Nouveau mot de passe</label>
+      <input id="new-password" type="password" autocomplete="new-password" />
+
+      <label for="new-password-confirm">Confirmation du nouveau mot de passe</label>
+      <input id="new-password-confirm" type="password" autocomplete="new-password" />
+
+      <button id="password-save-btn" type="button">Mettre à jour le mot de passe (démo)</button>
+      <div id="password-status" class="status"></div>
+    </div>
+
+    <a class="back-link" href="index.html">← Retour à la boutique</a>
+  </div>
+
+  <script>
+    (function () {
+      var roleSelect = document.getElementById('role-header-select');
+      if (roleSelect) {
+        try {
+          var rawUser = window.localStorage.getItem('lp_auth_user');
+          if (rawUser) {
+            var u = JSON.parse(rawUser) || {};
+            if (u.role) {
+              var r = String(u.role).toUpperCase();
+              if (r === 'CLIENT') roleSelect.value = 'CLIENT';
+              else if (r === 'SHOP') roleSelect.value = 'SHOP';
+              else if (r === 'ADMIN') roleSelect.value = 'ADMIN';
+              else if (r === 'DELIVERY') roleSelect.value = 'DELIVERY';
+            }
+          }
+        } catch (e) {}
+
+        roleSelect.addEventListener('change', function () {
+          var value = roleSelect.value;
+          if (!value) return;
+          if (value === 'CLIENT') {
+            window.location.href = 'index.html';
+          } else if (value === 'SHOP' || value === 'ADMIN') {
+            window.location.href = 'orders.html';
+          } else if (value === 'DELIVERY') {
+            window.location.href = 'delivery-list.html';
+          }
+        });
+      }
+
+      var loginBtn = document.getElementById('login-header-btn');
+      if (loginBtn) {
+        loginBtn.addEventListener('click', function () {
+          window.location.href = 'login.html';
+        });
+      }
+
+      var presentationBtn = document.getElementById('presentation-header-btn');
+      if (presentationBtn) {
+        presentationBtn.addEventListener('click', function () {
+          window.location.href = 'presentation.html';
+        });
+      }
+
+      var myOrdersBtn = document.getElementById('myorders-header-btn');
+      if (myOrdersBtn) {
+        myOrdersBtn.addEventListener('click', function () {
+          window.location.href = 'index.html';
+        });
+      }
+
+      var profileBtn = document.getElementById('profile-header-btn');
+      if (profileBtn) {
+        profileBtn.addEventListener('click', function () {
+          window.location.href = 'profile.html';
+        });
+      }
+    })();
+  </script>
+
+  <script>
+    (function () {
+      var PROFILE_STORAGE_KEY = 'lp_profile_client';
+      var AUTH_USER_KEY = 'lp_auth_user';
+      var CREDIT_LIMIT = 2000; // €
+
+      var nameInput = document.getElementById('profile-name');
+      var emailInput = document.getElementById('profile-email');
+      var phoneInput = document.getElementById('profile-phone');
+      var companyInput = document.getElementById('profile-company');
+      var addressInput = document.getElementById('profile-address');
+      var postalCodeInput = document.getElementById('profile-postal-code');
+      var cityInput = document.getElementById('profile-city');
+      var countryInput = document.getElementById('profile-country');
+      var customerCodeInput = document.getElementById('profile-customer-code');
+      var vatInput = document.getElementById('profile-vat');
+      var siretInput = document.getElementById('profile-siret');
+      var apeInput = document.getElementById('profile-ape');
+      var profileSaveBtn = document.getElementById('profile-save-btn');
+      var profileStatus = document.getElementById('profile-status');
+
+      var creditLimitSpan = document.getElementById('credit-limit');
+      var creditUsedSpan = document.getElementById('credit-used');
+      var creditAvailableSpan = document.getElementById('credit-available');
+      var creditStatus = document.getElementById('credit-status');
+
+      var oldPwdInput = document.getElementById('old-password');
+      var newPwdInput = document.getElementById('new-password');
+      var newPwdConfirmInput = document.getElementById('new-password-confirm');
+      var passwordSaveBtn = document.getElementById('password-save-btn');
+      var passwordStatus = document.getElementById('password-status');
+
+      function setStatus(el, msg, type) {
+        if (!el) return;
+        el.textContent = msg || '';
+        el.className = 'status' + (type ? ' ' + type : '');
+      }
+
+      function loadAuthUser() {
+        try {
+          var raw = window.localStorage.getItem(AUTH_USER_KEY);
+          if (!raw) return null;
+          return JSON.parse(raw);
+        } catch (e) {
+          console.error('Failed to load auth user for profile (demo)', e);
+          return null;
+        }
+      }
+
+      async function loadProfile() {
+        var authUser = loadAuthUser();
+        var initialEmail = authUser && authUser.email ? authUser.email : '';
+        var initialName = authUser && authUser.displayName ? authUser.displayName : '';
+
+        // First try to load from backend customers table (Neon)
+        if (initialEmail) {
+          try {
+            var resp = await fetch('http://localhost:3002/api/customers/me?email=' + encodeURIComponent(initialEmail));
+            if (resp.ok) {
+              var customer = await resp.json();
+              if (customer) {
+                nameInput.value = (customer.contactName || customer.companyName || initialName || '');
+                emailInput.value = customer.email || initialEmail || '';
+                phoneInput.value = customer.phone || '';
+                companyInput.value = customer.companyName || '';
+                // Map address fields
+                addressInput.value = customer.addressLine1 || '';
+                postalCodeInput.value = customer.postalCode || '';
+                cityInput.value = customer.customerCity || customer.city || '';
+                countryInput.value = customer.customerCountry || customer.country || '';
+
+                customerCodeInput.value = customer.customerCode || customer.customer_code || '';
+                vatInput.value = customer.vatNumber || customer.vat_number || '';
+                siretInput.value = customer.siret || '';
+                apeInput.value = customer.apeCode || customer.ape_code || '';
+
+                // Also mirror into localStorage profile so existing demo logic stays in sync
+                try {
+                  window.localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify({
+                    name: nameInput.value,
+                    email: emailInput.value,
+                    phone: phoneInput.value,
+                    company: companyInput.value,
+                    address: addressInput.value,
+                    postalCode: postalCodeInput.value,
+                    city: cityInput.value,
+                    country: countryInput.value,
+                    customerCode: customerCodeInput.value,
+                    vatNumber: vatInput.value,
+                    siret: siretInput.value,
+                    apeCode: apeInput.value
+                  }));
+                } catch (e) {}
+
+                return;
+              }
+            }
+          } catch (e) {
+            console.error('Failed to load profile from backend (demo)', e);
+          }
+        }
+
+        // Fallback: previous localStorage-only behaviour
+        try {
+          var raw = window.localStorage.getItem(PROFILE_STORAGE_KEY);
+          if (raw) {
+            var data = JSON.parse(raw) || {};
+            nameInput.value = data.name || initialName || '';
+            emailInput.value = data.email || initialEmail || '';
+            phoneInput.value = data.phone || '';
+            companyInput.value = data.company || '';
+            addressInput.value = data.address || '';
+            postalCodeInput.value = data.postalCode || '';
+            cityInput.value = data.city || '';
+            countryInput.value = data.country || '';
+            customerCodeInput.value = data.customerCode || '';
+            vatInput.value = data.vatNumber || '';
+            siretInput.value = data.siret || '';
+            apeInput.value = data.apeCode || '';
+            return;
+          }
+        } catch (e) {
+          console.error('Failed to load profile data (demo)', e);
+        }
+
+        nameInput.value = initialName || '';
+        emailInput.value = initialEmail || '';
+      }
+
+      async function saveProfile() {
+        var data = {
+          name: (nameInput.value || '').trim(),
+          email: (emailInput.value || '').trim(),
+          phone: (phoneInput.value || '').trim(),
+          company: (companyInput.value || '').trim(),
+          address: (addressInput.value || '').trim(),
+          postalCode: (postalCodeInput.value || '').trim(),
+          city: (cityInput.value || '').trim(),
+          country: (countryInput.value || '').trim(),
+          customerCode: (customerCodeInput.value || '').trim(),
+          vatNumber: (vatInput.value || '').trim(),
+          siret: (siretInput.value || '').trim(),
+          apeCode: (apeInput.value || '').trim()
+        };
+        try {
+          window.localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(data));
+        } catch (e) {
+          console.error('Failed to save profile (demo)', e);
+        }
+
+        // Also sync with backend customers table (Neon)
+        if (data.email) {
+          try {
+            var resp = await fetch('http://localhost:3002/api/customers/me', {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                email: data.email,
+                contactName: data.name,
+                phone: data.phone,
+                companyName: data.company,
+                addressLine1: data.address,
+                postalCode: data.postalCode,
+                city: data.city,
+                country: data.country,
+                customerCode: data.customerCode,
+                vatNumber: data.vatNumber,
+                siret: data.siret,
+                apeCode: data.apeCode
+              })
+            });
+            if (!resp.ok) {
+              console.error('Backend returned non-OK for profile sync (demo)', resp.status);
+            }
+          } catch (e) {
+            console.error('Failed to sync profile with backend (demo)', e);
+          }
+        }
+
+        setStatus(profileStatus, 'Profil enregistré (démo).', 'ok');
+      }
+
+      function formatEuro(v) {
+        var n = Number(v) || 0;
+        return '€' + n.toFixed(2);
+      }
+
+      async function refreshCredit() {
+        var authUser = loadAuthUser();
+        if (!authUser || !authUser.email) {
+          creditLimitSpan.textContent = formatEuro(0).slice(1);
+          creditUsedSpan.textContent = formatEuro(0).slice(1);
+          creditAvailableSpan.textContent = formatEuro(0).slice(1);
+          setStatus(creditStatus, 'Connectez-vous pour voir votre crédit (démo).', 'error');
+          return;
+        }
+
+        creditLimitSpan.textContent = formatEuro(CREDIT_LIMIT).slice(1);
+
+        try {
+          var res = await fetch('http://localhost:3002/api/orders?t=' + Date.now());
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          var orders = await res.json();
+          var email = String(authUser.email).toLowerCase();
+          var used = 0;
+          (orders || []).forEach(function (o) {
+            if (!o) return;
+            if (!o.email && o.customerEmail) {
+              o.email = o.customerEmail;
+            }
+            var orderEmail = (o.email || '').toLowerCase();
+            if (orderEmail !== email) return;
+            var mode = o.paymentMode || o.payment_mode;
+            if (String(mode).toUpperCase() !== 'CREDIT') return;
+            var status = String(o.status || '').toUpperCase();
+            if (status.indexOf('CANCEL') !== -1 || status.indexOf('ANNUL') !== -1) return;
+            var total = Number(o.totalAmount || o.total || 0);
+            used += total;
+          });
+
+          var available = CREDIT_LIMIT - used;
+          if (available < 0) available = 0;
+
+          creditUsedSpan.textContent = used.toFixed(2);
+          creditAvailableSpan.textContent = available.toFixed(2);
+          setStatus(creditStatus, 'Montants calculés à partir des commandes actuelles (démo).', '');
+        } catch (e) {
+          console.error('Failed to refresh credit info (demo)', e);
+          setStatus(creditStatus, 'Erreur lors du calcul du crédit (démo).', 'error');
+        }
+      }
+
+      async function changePassword() {
+        var authUser = loadAuthUser();
+        if (!authUser || !authUser.email) {
+          setStatus(passwordStatus, 'Vous devez être connecté pour changer de mot de passe (démo).', 'error');
+          return;
+        }
+
+        var oldPwd = (oldPwdInput.value || '').trim();
+        var newPwd = (newPwdInput.value || '').trim();
+        var newPwd2 = (newPwdConfirmInput.value || '').trim();
+
+        if (!oldPwd || !newPwd || !newPwd2) {
+          setStatus(passwordStatus, 'Merci de renseigner tous les champs mot de passe (démo).', 'error');
+          return;
+        }
+        if (newPwd.length < 4) {
+          setStatus(passwordStatus, 'Le nouveau mot de passe doit contenir au moins 4 caractères (démo).', 'error');
+          return;
+        }
+        if (newPwd !== newPwd2) {
+          setStatus(passwordStatus, 'Les deux saisies du nouveau mot de passe ne correspondent pas.', 'error');
+          return;
+        }
+
+        setStatus(passwordStatus, 'Mise à jour du mot de passe (démo)...', '');
+        passwordSaveBtn.disabled = true;
+
+        try {
+          var resp = await fetch('http://localhost:3002/auth/reset-demo', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email: authUser.email,
+              oldPassword: oldPwd,
+              newPassword: newPwd
+            })
+          });
+          var data = await resp.json();
+          passwordSaveBtn.disabled = false;
+          if (!data || !data.success) {
+            setStatus(passwordStatus, (data && data.message) || 'Échec de la mise à jour du mot de passe (démo).', 'error');
+            return;
+          }
+          setStatus(passwordStatus, data.message || 'Mot de passe mis à jour (démo).', 'ok');
+          oldPwdInput.value = '';
+          newPwdInput.value = '';
+          newPwdConfirmInput.value = '';
+        } catch (e) {
+          console.error('Failed to change password (demo)', e);
+          passwordSaveBtn.disabled = false;
+          setStatus(passwordStatus, 'Erreur lors de la mise à jour du mot de passe (démo).', 'error');
+        }
+      }
+
+      if (profileSaveBtn) {
+        profileSaveBtn.addEventListener('click', saveProfile);
+      }
+      if (passwordSaveBtn) {
+        passwordSaveBtn.addEventListener('click', function () {
+          changePassword();
+        });
+      }
+
+      loadProfile();
+      refreshCredit();
+    })();
+  </script>
+</body>
+</html>
