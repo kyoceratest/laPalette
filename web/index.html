@@ -900,7 +900,7 @@
                             'Scannez ce QR pour confirmer la livraison (démo).'
                           ),
                           React.createElement('img', {
-                            src: 'https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=' + encodeURIComponent(window.location.origin + '/delivery.html?code=' + (detail.order.publicOrderCode || detail.order.orderId)),
+                            src: 'https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=' + encodeURIComponent((function(){ var dir = window.location.origin + window.location.pathname.replace(/[^/]*$/, ''); return dir + 'delivery.html?code=' + (detail.order.publicOrderCode || detail.order.orderId); })()),
                             alt: 'QR confirmation de livraison',
                             style: { width: '160px', height: '160px', borderRadius: '4px', background: '#fff' }
                           })
