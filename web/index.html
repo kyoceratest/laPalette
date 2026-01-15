@@ -350,7 +350,7 @@
     <main id="root">Loading...</main>
   </div>
 
-  <script defer src="config.js"></script>
+  <script src="config.js"></script>
   <script defer src="header.js"></script>
   <!-- React via CDN (dev only) -->
   <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
@@ -411,6 +411,14 @@
           }
         }
         loadProducts();
+
+        // If coming from another page via header "Mes commandes"
+        try {
+          if (window.localStorage && window.localStorage.getItem('lp_open_myorders') === '1') {
+            window.localStorage.removeItem('lp_open_myorders');
+            setView('myOrders');
+          }
+        } catch (e) {}
 
         // Listen for header "My orders" button
         function handleMyOrdersRequested() {
