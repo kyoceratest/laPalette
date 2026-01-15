@@ -232,11 +232,7 @@
             '<li>Champs email / mot de passe, option <em>se souvenir de moi</em>.</li>' +
             '<li>Lien vers la page <a href="reset-password.html" target="_blank"><strong>reset-password.html</strong></a> pour le changement de mot de passe (démo).</li>' +
             '</ul>' +
-            '<div style="display:flex;gap:0.75rem;align-items:flex-start;flex-wrap:wrap;margin-top:0.5rem;">' +
-            '<img src="image/all1.png" alt="Login – étape 1" style="flex:1 1 220px;max-width:320px;width:100%;height:auto;border-radius:6px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.08);" />' +
-            '<img src="image/all2.png" alt="Login – étape 2" style="flex:1 1 220px;max-width:320px;width:100%;height:auto;border-radius:6px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.08);" />' +
-            '<img src="image/all3.png" alt="Login – étape 3" style="flex:1 1 220px;max-width:320px;width:100%;height:auto;border-radius:6px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.08);" />' +
-            '</div>'
+            '<img src="image/all1.png" alt="Écran de connexion" style="max-width:100%;height:auto;border-radius:6px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.08);margin-top:0.5rem;" />'
         },
         {
           title: 'Page reset mot de passe (reset-password.html)',
@@ -247,7 +243,8 @@
             '<li>Appel à l\'API <code>/auth/reset-demo</code> pour mettre à jour le mot de passe en mémoire.</li>' +
             '<li>Message clair expliquant que les comptes sont fictifs et non persistés.</li>' +
             '<li>Bouton pour revenir vers la page de <a href="login.html" target="_blank"><strong>login</strong></a>.</li>' +
-            '</ul>'
+            '</ul>' +
+            '<img src="image/all2.png" alt="Écran reset mot de passe" style="max-width:100%;height:auto;border-radius:6px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.08);" />'
         },
         {
           title: 'Page profil & crédit (profile.html)',
@@ -258,7 +255,8 @@
             '<li>Zone <strong>Informations de crédit (démo)</strong>&nbsp;: limite 2&nbsp;000&nbsp;€, crédit utilisé, crédit disponible.</li>' +
             '<li>Zone <strong>Changer mon mot de passe (démo)</strong> réutilisant l\'API <code>/auth/reset-demo</code>.</li>' +
             '<li>Page en français pour l\'utilisateur, logique en anglais pour les développeurs.</li>' +
-            '</ul>'
+            '</ul>' +
+            '<img src="image/all3.png" alt="Écran profil & crédit" style="max-width:100%;height:auto;border-radius:6px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.08);" />'
         },
         {
           title: 'Page liste commandes (orders.html)',
@@ -308,13 +306,48 @@
         },
         {
           title: 'Tarification du projet',
-          html: '<p>Proposition de tarifs selon le niveau de finition souhaité.</p>' +
-            '<ul>' +
-            '<li><strong>MVP</strong> : 2 500 € – 4 500 € · Site + API fonctionnels, flux commande/livraison, déploiement de base.</li>' +
-            '<li><strong>Business</strong> : 5 000 € – 9 000 € · Validation renforcée, accessibilité, emails, journalisation, SEO basique, 1 mois de support.</li>' +
-            '<li><strong>Pro</strong> : 10 000 € – 18 000 € · Reporting, admin avancé, tests auto (API/E2E), staging, formation & handover.</li>' +
-            '<li><strong>Maintenance optionnelle</strong> : 400 € – 600 €/mois (surveillance, sauvegardes, petites corrections).</li>' +
-            '</ul>'
+          html: '<p>Choisissez un niveau pour afficher le détail. Les fourchettes varient selon la profondeur fonctionnelle et le niveau d\'accompagnement.</p>' +
+            '<div style="display:flex;flex-direction:column;gap:0.5rem;">' +
+            '<details style="border:1px solid #e5e7eb;border-radius:8px;padding:0.5rem;background:#fff;">' +
+            '<summary style="cursor:pointer;font-weight:600;color:#111;">MVP · 2 500 € – 4 500 €</summary>' +
+            '<div style="margin-top:0.5rem;color:#333;">' +
+            '<ul style="margin:0 0 0.25rem 1rem;">' +
+            '<li>Site + API fonctionnels</li>' +
+            '<li>Flux commande → préparation → livraison (QR)</li>' +
+            '<li>Déploiement de base (Render + GitHub Pages)</li>' +
+            '</ul>' +
+            '</div>' +
+            '</details>' +
+            '<details style="border:1px solid #e5e7eb;border-radius:8px;padding:0.5rem;background:#fff;">' +
+            '<summary style="cursor:pointer;font-weight:600;color:#111;">Business · 5 000 € – 9 000 €</summary>' +
+            '<div style="margin-top:0.5rem;color:#333;">' +
+            '<ul style="margin:0 0 0.25rem 1rem;">' +
+            '<li>Validation renforcée, accessibilité AA</li>' +
+            '<li>Emails transactionnels, journalisation</li>' +
+            '<li>SEO basique, 1 mois de support</li>' +
+            '</ul>' +
+            '</div>' +
+            '</details>' +
+            '<details style="border:1px solid #e5e7eb;border-radius:8px;padding:0.5rem;background:#fff;">' +
+            '<summary style="cursor:pointer;font-weight:600;color:#111;">Pro · 10 000 € – 18 000 €</summary>' +
+            '<div style="margin-top:0.5rem;color:#333;">' +
+            '<ul style="margin:0 0 0.25rem 1rem;">' +
+            '<li>Reporting & back-office avancé</li>' +
+            '<li>Tests automatisés (API/E2E), CI/CD + staging</li>' +
+            '<li>Formation & handover</li>' +
+            '</ul>' +
+            '</div>' +
+            '</details>' +
+            '<details style="border:1px solid #e5e7eb;border-radius:8px;padding:0.5rem;background:#fff;">' +
+            '<summary style="cursor:pointer;font-weight:600;color:#111;">Maintenance · 400 € – 600 €/mois</summary>' +
+            '<div style="margin-top:0.5rem;color:#333;">' +
+            '<ul style="margin:0 0 0.25rem 1rem;">' +
+            '<li>Surveillance, sauvegardes</li>' +
+            '<li>Petites corrections & mises à jour</li>' +
+            '</ul>' +
+            '</div>' +
+            '</details>' +
+            '</div>'
         },
         {
           title: 'Résumé & prochaines étapes',
