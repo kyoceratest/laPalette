@@ -44,6 +44,9 @@
       '.lp-mobile-menu-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:1000;}\n'+
       '.lp-mobile-menu-panel{display:none;position:fixed;left:0;right:0;background:#e0001a;color:#fff;padding:0.5rem 1rem 0.75rem;z-index:2000;}\n'+
       '.lp-mobile-menu-panel .lp-mobile-input{width:100%;margin-bottom:0.45rem;font-size:0.95rem;padding:0.45rem 0.6rem;color:#333;background:#fff;border:none;border-radius:4px;}\n'+
+      /* Top bar action buttons */
+      '#cart-header button{border:none;background:#0070f3;color:#fff;padding:0.35rem 0.75rem;border-radius:4px;cursor:pointer;font-size:0.85rem;}\n'+
+      '#cart-header button:hover{background:#005bd1;}\n'+
       'body.menu-open .lp-mobile-menu-panel{display:block;}\n'+
       'body.menu-open .lp-mobile-menu-overlay{display:block;}\n'+
       '@media (max-width:768px){#cart-header{display:none}.lp-mobile-menu-toggle{display:inline-block}}\n'+
