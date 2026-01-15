@@ -433,6 +433,7 @@
               try {
                 window.localStorage.setItem('lp_auth_token', data.token);
                 window.localStorage.setItem('lp_auth_user', JSON.stringify(data.user));
+                try { window.dispatchEvent(new Event('lp-auth-changed')); } catch(e) {}
                 if (rememberMeCheckbox && rememberMeCheckbox.checked) {
                   var accTypeVal = accountTypeSelect ? accountTypeSelect.value : '';
                   window.localStorage.setItem('lp_login_remember', JSON.stringify({

@@ -80,25 +80,46 @@
   }
 
   function wireNav(){
-    var loginBtn = document.getElementById('login-header-btn');
-    if (loginBtn){
-      var isLogged = false;
-      try{
-        isLogged = !!(window.localStorage.getItem('lp_auth_token') || window.localStorage.getItem('lp_auth_user'));
-      }catch(e){}
-      if (isLogged){
-        try{ loginBtn.textContent = 'Logout'; }catch(e){}
-        loginBtn.addEventListener('click', function(){
-          try{ window.localStorage.removeItem('lp_auth_token'); }catch(e){}
-          try{ window.localStorage.removeItem('lp_auth_user'); }catch(e){}
-          // After logout, return to client home
-          window.location.href = 'index.html';
-        });
-      } else {
-        try{ loginBtn.textContent = 'Login'; }catch(e){}
-        loginBtn.addEventListener('click', function(){ window.location.href = 'login.html'; });
+    function isLoggedIn(){
+      try { return !!(window.localStorage.getItem('lp_auth_token') || window.localStorage.getItem('lp_auth_user')); } catch(e) { return false; }
+    }
+
+    function doLogout(){
+      try{ window.localStorage.removeItem('lp_auth_token'); }catch(e){}
+      try{ window.localStorage.removeItem('lp_auth_user'); }catch(e){}
+      try{ var rs = document.getElementById('role-header-select'); if (rs) rs.value = ''; }catch(e){}
+      try{ var rsm = document.getElementById('lp-role-select-mobile'); if (rsm) rsm.value = ''; }catch(e){}
+      try{ window.dispatchEvent(new Event('lp-auth-changed')); }catch(e){}
+      window.location.href = 'index.html';
+    }
+
+    function updateAuthButtons(){
+      var loginBtn = document.getElementById('login-header-btn');
+      if (loginBtn){
+        if (isLoggedIn()){
+          try{ loginBtn.textContent = 'Logout'; }catch(e){}
+          loginBtn.onclick = doLogout;
+        } else {
+          try{ loginBtn.textContent = 'Login'; }catch(e){}
+          loginBtn.onclick = function(){ window.location.href = 'login.html'; };
+        }
+      }
+
+      var btnLoginM = document.getElementById('lp-btn-login-mobile');
+      if (btnLoginM){
+        if (isLoggedIn()){
+          try{ btnLoginM.textContent = 'Logout'; }catch(e){}
+          btnLoginM.onclick = function(){ doLogout(); };
+        } else {
+          try{ btnLoginM.textContent = 'Login'; }catch(e){}
+          btnLoginM.onclick = function(){ closeMenu(); window.location.href = 'login.html'; };
+        }
       }
     }
+
+    updateAuthButtons();
+    try { window.addEventListener('storage', updateAuthButtons); } catch(e){}
+    try { window.addEventListener('lp-auth-changed', updateAuthButtons); } catch(e){}
 
     var roleSelect = document.getElementById('role-header-select');
     if (roleSelect){
@@ -114,7 +135,7 @@
       }catch(e){}
       roleSelect.addEventListener('change', function(){
         var v = roleSelect.value;
-        if (!v) return;
+        if (!v) { window.location.href='index.html'; return; }
         if (v==='CLIENT') window.location.href='index.html';
         else if (v==='SHOP' || v==='ADMIN') window.location.href='orders.html';
         else if (v==='DELIVERY') window.location.href='delivery-list.html';
@@ -165,22 +186,7 @@
     var btnPresM = document.getElementById('lp-btn-presentation-mobile'); if (btnPresM) btnPresM.addEventListener('click', function(){ go('presentation.html'); });
     var btnMyM = document.getElementById('lp-btn-myorders-mobile'); if (btnMyM) btnMyM.addEventListener('click', function(){ closeMenu(); try{ window.dispatchEvent(new CustomEvent('lp-myorders-requested')); }catch(e){} if (!/index\.html$/i.test(location.pathname)) { try { window.localStorage.setItem('lp_open_myorders','1'); } catch(e) {} window.location.href='index.html'; } window.scrollTo(0,0); });
     var btnProfM = document.getElementById('lp-btn-profile-mobile'); if (btnProfM) btnProfM.addEventListener('click', function(){ go('profile.html'); });
-    var btnLoginM = document.getElementById('lp-btn-login-mobile');
-    if (btnLoginM){
-      var isLoggedM = false;
-      try{ isLoggedM = !!(window.localStorage.getItem('lp_auth_token') || window.localStorage.getItem('lp_auth_user')); }catch(e){}
-      if (isLoggedM){
-        try{ btnLoginM.textContent = 'Logout'; }catch(e){}
-        btnLoginM.addEventListener('click', function(){
-          try{ window.localStorage.removeItem('lp_auth_token'); }catch(e){}
-          try{ window.localStorage.removeItem('lp_auth_user'); }catch(e){}
-          go('index.html');
-        });
-      } else {
-        try{ btnLoginM.textContent = 'Login'; }catch(e){}
-        btnLoginM.addEventListener('click', function(){ go('login.html'); });
-      }
-    }
+    // Auth buttons are now handled by updateAuthButtons()
 
     var roleSelM = document.getElementById('lp-role-select-mobile');
     try {
@@ -193,7 +199,7 @@
         var v = roleSelM.value;
         if (roleSelect) { roleSelect.value = v; }
         closeMenu();
-        if (!v) return;
+        if (!v) { go('index.html'); return; }
         if (v==='CLIENT') go('index.html');
         else if (v==='SHOP' || v==='ADMIN') go('orders.html');
         else if (v==='DELIVERY') go('delivery-list.html');
