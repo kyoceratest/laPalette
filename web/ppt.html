@@ -74,7 +74,7 @@
           slide.addText('Présenté par: ' + presenter, { x:0.5, y:2.4, w:9, fontSize:14, color:'4B5563', fontFace:'Montserrat' });
         }
       }
-      function addBullets(slide, title, bullets){
+      function addBullets(slide, title, bullets, pptx){
         addTwoToneBg(slide, pptx);
         slide.addText(title, { x:0.6, y:0.5, w:8.5, fontSize:22, bold:true, color:'111111', fontFace:'Montserrat' });
         var y = 1.1;
@@ -162,14 +162,14 @@
             'Amélioration de l\'expérience client (commande → livraison)',
             'Réduction des erreurs et délais côté magasin',
             'Confirmation de livraison par QR, traçabilité simple'
-          ]);
+          ], pptx);
           // Pain points
           var s2 = pptx.addSlide();
           addBullets(s2, 'Problématiques actuelles', [
             'Complexité des commandes et échanges incomplets',
             'Retards et manque de visibilité sur l\'état',
             'Confirmation de remise non systématique'
-          ]);
+          ], pptx);
           // Solution overview
           addImageSlide(pptx, 'Vue d\'ensemble – Rôles', 'image/client1.png', ['Client – Commande en ligne']);
           addImageSlide(pptx, 'Vue d\'ensemble – Rôles', 'image/shop1.png', ['Magasin – Préparation']);
@@ -202,7 +202,7 @@
             'Ce qui est prêt: parcours complet démo, déploiement',
             'Niveau Business: validations, accessibilité, emails prod, SEO, logs',
             'Niveau Pro: reporting, admin avancé, tests auto, CI/CD + staging'
-          ]);
+          ], pptx);
 
           pptx.writeFile({ fileName: 'LaPalette_Demo.pptx' }).then(function(){
             btn.disabled = false;
