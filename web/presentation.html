@@ -159,7 +159,10 @@
       <button class="step-link" data-step="4"><span>5.</span> Page profil & crédit (profile.html)</button>
       <button class="step-link" data-step="5"><span>6.</span> Page liste commandes (orders.html)</button>
       <button class="step-link" data-step="6"><span>7.</span> Page préparation commande (prepare.html)</button>
-      <button class="step-link" data-step="7"><span>8.</span> Tarification du projet</button>
+      <button class="step-link" data-step="7"><span>8.</span> Page livraison – liste (delivery-list.html)</button>
+      <button class="step-link" data-step="8"><span>9.</span> Confirmation de livraison – QR (delivery.html)</button>
+      <button class="step-link" data-step="9"><span>10.</span> Tarification du projet</button>
+      <button class="step-link" data-step="10"><span>11.</span> Résumé & prochaines étapes</button>
     </aside>
 
     <section class="content-card" id="presentation-content" aria-live="polite">
@@ -269,6 +272,26 @@
             '</ul>'
         },
         {
+          title: 'Page livraison – liste (delivery-list.html)',
+          html: '<p>Vue livreur listant uniquement les commandes <code>READY_FOR_DELIVERY</code>.</p>' +
+            '<ul>' +
+            '<li>Accès via sélecteur de rôle <strong>Livraison</strong> dans l\'en-tête ou lien direct <a href="delivery-list.html" target="_blank">delivery-list.html</a>.</li>' +
+            '<li>Affiche code commande, client, adresse, total, statut.</li>' +
+            '<li>Bouton <em>Détails / préparation</em> pour voir les articles, créneau, etc.</li>' +
+            '<li>Bouton <em>Scanner le QR du client (démo)</em> pour ouvrir la page de confirmation (simulation).</li>' +
+            '</ul>'
+        },
+        {
+          title: 'Confirmation de livraison – QR (delivery.html)',
+          html: '<p>Page de confirmation appelée par le QR <code>delivery.html?code=PUBLIC_ORDER_CODE</code>.</p>' +
+            '<ul>' +
+            '<li>Le QR est affiché côté client quand le statut est <em>READY_FOR_DELIVERY</em>.</li>' +
+            '<li>Le scan ouvre <a href="delivery.html?code=XXXX" target="_blank">delivery.html</a> qui appelle l\'API <code>POST /api/orders/deliver/:code</code>.</li>' +
+            '<li>Si OK, la commande passe à <strong>COMPLETED</strong> (terminée).</li>' +
+            '<li>Fonctionne également via la simulation depuis la liste livreur.</li>' +
+            '</ul>'
+        },
+        {
           title: 'Tarification du projet',
           html: '<p>Proposition de tarifs selon le niveau de finition souhaité.</p>' +
             '<ul>' +
@@ -276,6 +299,16 @@
             '<li><strong>Business</strong> : 5 000 € – 9 000 € · Validation renforcée, accessibilité, emails, journalisation, SEO basique, 1 mois de support.</li>' +
             '<li><strong>Pro</strong> : 10 000 € – 18 000 € · Reporting, admin avancé, tests auto (API/E2E), staging, formation & handover.</li>' +
             '<li><strong>Maintenance optionnelle</strong> : 400 € – 600 €/mois (surveillance, sauvegardes, petites corrections).</li>' +
+            '</ul>'
+        },
+        {
+          title: 'Résumé & prochaines étapes',
+          html: '<p>Bilan rapide et actions pour finaliser le niveau Business.</p>' +
+            '<ul>' +
+            '<li><strong>Couvert</strong> : parcours client → préparation → livraison par QR, en-tête partagé, déploiement Pages + Render.</li>' +
+            '<li><strong>À finaliser (Business)</strong> : validations côté client/serveur, accessibilité, SEO, emails en production, logs/monitoring, mini runbook.</li>' +
+            '<li><strong>Option Pro</strong> : reporting, admin avancé, tests auto (API/E2E), staging + CI/CD, formation.</li>' +
+            '<li>Voir README (Déploiement/Config, En-tête partagé, Livraison/QR, Tarification, Couverture, Prochaines étapes).</li>' +
             '</ul>'
         }
       ];
