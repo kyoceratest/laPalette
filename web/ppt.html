@@ -69,14 +69,16 @@
       function addBullets(slide, title, bullets){
         slide.addText(title, { x:0.6, y:0.5, w:8.5, fontSize:22, bold:true, color:'111111', fontFace:'Montserrat' });
         var y = 1.1;
-        slide.addText(bullets, { x:0.7, y:y, w:8.3, fontSize:16, color:'333333', bullet:true, lineSpacingMultiple:1.15, fontFace:'Montserrat' });
+        var body = Array.isArray(bullets) ? bullets.join('\n') : String(bullets || '');
+        slide.addText(body, { x:0.7, y:y, w:8.3, fontSize:16, color:'333333', bullet:true, lineSpacingMultiple:1.15, fontFace:'Montserrat' });
       }
       function addImageSlide(pptx, title, imgPath, captions){
         var slide = pptx.addSlide();
         slide.addText(title, { x:0.6, y:0.5, w:8.5, fontSize:22, bold:true, color:'111111', fontFace:'Montserrat' });
         slide.addImage({ path: imgPath, x:0.9, y:1.1, w:7.5, h:4.2, sizing: { type:'contain', w:7.5, h:4.2 }, rounding:6, shadow:{ type:'outer', opacity:30, blur:4 } });
         if (captions && captions.length){
-          slide.addText(captions, { x:0.9, y:5.4, w:7.5, fontSize:14, color:'555555', bullet:true, fontFace:'Montserrat' });
+          var cap = Array.isArray(captions) ? captions.join('\n') : String(captions);
+          slide.addText(cap, { x:0.9, y:5.4, w:7.5, fontSize:14, color:'555555', bullet:true, fontFace:'Montserrat' });
         }
       }
       function addPricingSlide(pptx){
