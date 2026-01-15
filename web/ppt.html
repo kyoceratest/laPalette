@@ -53,17 +53,11 @@
   <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.min.js"></script>
   <script>
     (function(){
-      var BG_TOP = 'F6F0E6';   // light cream
-      var BG_BOTTOM = 'EDDDCB'; // deeper cream
-      function addTwoToneBg(slide, pptx){
-        // Full-bleed background with two horizontal bands
-        slide.addShape(pptx.shapes.RECTANGLE, { x:0, y:0, w:10, h:3.8, fill: BG_TOP, line: BG_TOP });
-        slide.addShape(pptx.shapes.RECTANGLE, { x:0, y:3.8, w:10, h:3.2, fill: BG_BOTTOM, line: BG_BOTTOM });
-      }
+      var BG_SOLID = 'F6F0E6'; // solid light cream background
       function img(path){ return path; }
       function addTitleSlide(pptx, logoPath, tagline, presenter){
         var slide = pptx.addSlide();
-        addTwoToneBg(slide, pptx);
+        slide.background = { color: BG_SOLID };
         slide.addText('La Palette – Click & Collect + Delivery (Démo)', { x:0.5, y:0.6, w:9, fontSize:28, bold:true, color:'1F2937', fontFace:'Montserrat' });
         slide.addText(tagline || 'Présentation client', { x:0.5, y:1.3, w:9, fontSize:18, color:'374151', fontFace:'Montserrat' });
         if (logoPath) {
@@ -74,8 +68,8 @@
           slide.addText('Présenté par: ' + presenter, { x:0.5, y:2.4, w:9, fontSize:14, color:'4B5563', fontFace:'Montserrat' });
         }
       }
-      function addBullets(slide, title, bullets, pptx){
-        addTwoToneBg(slide, pptx);
+      function addBullets(slide, title, bullets){
+        slide.background = { color: BG_SOLID };
         slide.addText(title, { x:0.6, y:0.5, w:8.5, fontSize:22, bold:true, color:'111111', fontFace:'Montserrat' });
         var y = 1.1;
         var body = Array.isArray(bullets) ? bullets.map(function(t){ return '\u2022 ' + t; }).join('\n') : String(bullets || '');
@@ -83,7 +77,7 @@
       }
       function addImageSlide(pptx, title, imgPath, captions){
         var slide = pptx.addSlide();
-        addTwoToneBg(slide, pptx);
+        slide.background = { color: BG_SOLID };
         slide.addText(title, { x:0.6, y:0.5, w:8.5, fontSize:22, bold:true, color:'111111', fontFace:'Montserrat' });
         slide.addImage({ path: imgPath, x:0.9, y:1.1, w:7.5, h:4.2, sizing: { type:'contain', w:7.5, h:4.2 }, rounding:6, shadow:{ type:'outer', opacity:0.3, blur:4 } });
         if (captions && captions.length){
@@ -93,7 +87,7 @@
       }
       function addPricingSlide(pptx){
         var slide = pptx.addSlide();
-        addTwoToneBg(slide, pptx);
+        slide.background = { color: BG_SOLID };
         slide.addText('Tarification (EUR)', { x:0.6, y:0.5, w:8.5, fontSize:22, bold:true, color:'111111', fontFace:'Montserrat' });
         var items = [
           { title:'MVP', price:'2\u202f500 € – 4\u202f500 €', desc:['Site + API fonctionnels','Flux commande → préparation → livraison (QR)','Déploiement de base (Render + GitHub Pages)'] },
@@ -114,7 +108,7 @@
       }
       function addSecuritySlide(pptx){
         var slide = pptx.addSlide();
-        addTwoToneBg(slide, pptx);
+        slide.background = { color: BG_SOLID };
         addBullets(slide, 'Sécurité', [
           'HTTPS, séparation Front (GitHub Pages) / API (Render)',
           'Jetons d\'authentification, rôles (CLIENT/SHOP/ADMIN/DELIVERY)',
@@ -124,7 +118,7 @@
       }
       function addPrivacySlide(pptx){
         var slide = pptx.addSlide();
-        addTwoToneBg(slide, pptx);
+        slide.background = { color: BG_SOLID };
         addBullets(slide, 'Protection des données', [
           'Démo: PII minimale, mots de passe non persistés',
           'Aucune donnée analytics côté client',
@@ -133,7 +127,7 @@
       }
       function addArchitectureSlide(pptx){
         var slide = pptx.addSlide();
-        addTwoToneBg(slide, pptx);
+        slide.background = { color: BG_SOLID };
         addBullets(slide, 'Architecture & Déploiement', [
           'Frontend: GitHub Pages (site statique, config.js pour API_BASE)',
           'Backend: Node/Express sur Render, base PostgreSQL (Neon)',
@@ -162,14 +156,14 @@
             'Amélioration de l\'expérience client (commande → livraison)',
             'Réduction des erreurs et délais côté magasin',
             'Confirmation de livraison par QR, traçabilité simple'
-          ], pptx);
+          ]);
           // Pain points
           var s2 = pptx.addSlide();
           addBullets(s2, 'Problématiques actuelles', [
             'Complexité des commandes et échanges incomplets',
             'Retards et manque de visibilité sur l\'état',
             'Confirmation de remise non systématique'
-          ], pptx);
+          ]);
           // Solution overview
           addImageSlide(pptx, 'Vue d\'ensemble – Rôles', 'image/client1.png', ['Client – Commande en ligne']);
           addImageSlide(pptx, 'Vue d\'ensemble – Rôles', 'image/shop1.png', ['Magasin – Préparation']);
@@ -202,7 +196,7 @@
             'Ce qui est prêt: parcours complet démo, déploiement',
             'Niveau Business: validations, accessibilité, emails prod, SEO, logs',
             'Niveau Pro: reporting, admin avancé, tests auto, CI/CD + staging'
-          ], pptx);
+          ]);
 
           pptx.writeFile({ fileName: 'LaPalette_Demo.pptx' }).then(function(){
             btn.disabled = false;
