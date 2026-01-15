@@ -112,6 +112,7 @@
       try{ window.dispatchEvent(new CustomEvent('lp-myorders-requested')); }catch(e){}
       try{ if (typeof window.setView === 'function'){ window.setView('myOrders'); } }catch(e){}
       if (!/index\.html$/i.test(location.pathname)){
+        try { window.localStorage.setItem('lp_open_myorders', '1'); } catch(e) {}
         window.location.href = 'index.html';
       }
     }); }
@@ -145,7 +146,7 @@
 
     function go(url){ closeMenu(); window.location.href = url; }
     var btnPresM = document.getElementById('lp-btn-presentation-mobile'); if (btnPresM) btnPresM.addEventListener('click', function(){ go('presentation.html'); });
-    var btnMyM = document.getElementById('lp-btn-myorders-mobile'); if (btnMyM) btnMyM.addEventListener('click', function(){ closeMenu(); try{ window.dispatchEvent(new CustomEvent('lp-myorders-requested')); }catch(e){} if (!/index\.html$/i.test(location.pathname)) window.location.href='index.html'; window.scrollTo(0,0); });
+    var btnMyM = document.getElementById('lp-btn-myorders-mobile'); if (btnMyM) btnMyM.addEventListener('click', function(){ closeMenu(); try{ window.dispatchEvent(new CustomEvent('lp-myorders-requested')); }catch(e){} if (!/index\.html$/i.test(location.pathname)) { try { window.localStorage.setItem('lp_open_myorders','1'); } catch(e) {} window.location.href='index.html'; } window.scrollTo(0,0); });
     var btnProfM = document.getElementById('lp-btn-profile-mobile'); if (btnProfM) btnProfM.addEventListener('click', function(){ go('profile.html'); });
     var btnLoginM = document.getElementById('lp-btn-login-mobile'); if (btnLoginM) btnLoginM.addEventListener('click', function(){ go('login.html'); });
 
