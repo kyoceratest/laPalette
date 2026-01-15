@@ -213,6 +213,19 @@
     if (mount) { mount.innerHTML = buildHeaderHtml(); }
     hideExistingNativeHeaders();
     wireNav();
+    // Non-blocking API warm-up to reduce first-request latency (Render cold start)
+    try {
+      var base = (window.API_BASE || '').replace(/\/$/, '');
+      if (base) {
+        var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+        if (ctrl) {
+          setTimeout(function(){ try{ ctrl.abort(); }catch(e){} }, 3000);
+          fetch(base + '/health', { signal: ctrl.signal, keepalive: true }).catch(function(){});
+        } else {
+          fetch(base + '/health', { keepalive: true }).catch(function(){});
+        }
+      }
+    } catch (e) {}
     try {
       var t = document.getElementById('lp-mobile-menu-toggle');
       function updateToggleVisibility(){
