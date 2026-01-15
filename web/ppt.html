@@ -75,7 +75,7 @@
       function addImageSlide(pptx, title, imgPath, captions){
         var slide = pptx.addSlide();
         slide.addText(title, { x:0.6, y:0.5, w:8.5, fontSize:22, bold:true, color:'111111', fontFace:'Montserrat' });
-        slide.addImage({ path: imgPath, x:0.9, y:1.1, w:7.5, h:4.2, sizing: { type:'contain', w:7.5, h:4.2 }, rounding:6, shadow:{ type:'outer', opacity:30, blur:4 } });
+        slide.addImage({ path: imgPath, x:0.9, y:1.1, w:7.5, h:4.2, sizing: { type:'contain', w:7.5, h:4.2 }, rounding:6, shadow:{ type:'outer', opacity:0.3, blur:4 } });
         if (captions && captions.length){
           var cap = Array.isArray(captions) ? captions.join('\n') : String(captions);
           slide.addText(cap, { x:0.9, y:5.4, w:7.5, fontSize:14, color:'555555', bullet:true, fontFace:'Montserrat' });
@@ -95,9 +95,10 @@
           var c = i % 2, r = Math.floor(i/2);
           var bx = x + c * colW;
           var by = y + r * rowH;
-          slide.addShape(pptx.shapes.ROUNDED_RECTANGLE, { x:bx, y:by, w:colW-0.4, h:rowH-0.3, fill:'FFFFFF', line:'E5E7EB', shadow:{ type:'outer', opacity:20, blur:3 } });
+          slide.addShape(pptx.shapes.ROUNDED_RECTANGLE, { x:bx, y:by, w:colW-0.4, h:rowH-0.3, fill:'FFFFFF', line:'E5E7EB', shadow:{ type:'outer', opacity:0.2, blur:3 } });
           slide.addText(items[i].title + ' · ' + items[i].price, { x:bx+0.2, y:by+0.15, w:colW-0.8, fontSize:16, bold:true, color:'111111', fontFace:'Montserrat' });
-          slide.addText(items[i].desc, { x:bx+0.25, y:by+0.55, w:colW-0.9, fontSize:14, color:'333333', bullet:true, fontFace:'Montserrat' });
+          var body = Array.isArray(items[i].desc) ? items[i].desc.join('\n') : String(items[i].desc || '');
+          slide.addText(body, { x:bx+0.25, y:by+0.55, w:colW-0.9, fontSize:14, color:'333333', bullet:true, fontFace:'Montserrat' });
         }
       }
       function addSecuritySlide(pptx){
