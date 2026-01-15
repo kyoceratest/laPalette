@@ -53,11 +53,12 @@
       box-shadow: 0 4px 10px rgba(0,0,0,0.12);
     }
     .product-image {
+      display: block;
       width: 100%;
+      height: 180px; /* reserve space to avoid text overlap while loading */
       border-radius: 4px;
       object-fit: cover;
-      max-height: 180px;
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.75rem;
       background: #eee;
     }
     .product-card h3 {
@@ -71,6 +72,20 @@
     .price {
       font-weight: 600;
       margin-bottom: 0.5rem;
+    }
+    /* Improve number input visuals and avoid focus clipping */
+    .product-card input[type="number"] {
+      width: 60px;
+      font-size: 0.85rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 0.2rem 0.3rem;
+      box-sizing: border-box;
+      background: #fff;
+    }
+    .product-card input[type="number"]:focus {
+      outline: 2px solid #0070f3;
+      outline-offset: 2px; /* prevent the outline from being cut */
     }
     button {
       border: none;
