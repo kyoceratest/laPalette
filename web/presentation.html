@@ -167,8 +167,8 @@
   </style>
 </head>
 <body>
+  <script src="config.js?v=20260115"></script>
   <script defer src="header.js"></script>
-  <script defer src="header.shared.js"></script>
 
   <main class="layout">
     <aside class="steps-list">
@@ -179,6 +179,7 @@
       <button class="step-link" data-step="3"><span>4.</span> Page profil & crédit (profile.html)</button>
       <button class="step-link" data-step="4"><span>5.</span> Page liste commandes (orders.html)</button>
       <button class="step-link" data-step="5"><span>6.</span> Page préparation commande (prepare.html)</button>
+      <button class="step-link" data-step="6"><span>7.</span> Tarification du projet</button>
     </aside>
 
     <section class="content-card" id="presentation-content" aria-live="polite">
@@ -273,6 +274,16 @@
             '<li>Vérification que le compte connecté appartient bien au magasin de la commande.</li>' +
             '<li>Boutons pour faire évoluer le statut (préparation, prêt pour livraison, etc.).</li>' +
             '<li>Permet de montrer le flux complet côté magasin, sans impacter de vraies données.</li>' +
+            '</ul>'
+        },
+        {
+          title: 'Tarification du projet',
+          html: '<p>Proposition de tarifs selon le niveau de finition souhaité.</p>' +
+            '<ul>' +
+            '<li><strong>MVP</strong> : 2 500 € – 4 500 € · Site + API fonctionnels, flux commande/livraison, déploiement de base.</li>' +
+            '<li><strong>Business</strong> : 5 000 € – 9 000 € · Validation renforcée, accessibilité, emails, journalisation, SEO basique, 1 mois de support.</li>' +
+            '<li><strong>Pro</strong> : 10 000 € – 18 000 € · Reporting, admin avancé, tests auto (API/E2E), staging, formation & handover.</li>' +
+            '<li><strong>Maintenance optionnelle</strong> : 400 € – 600 €/mois (surveillance, sauvegardes, petites corrections).</li>' +
             '</ul>'
         }
       ];
