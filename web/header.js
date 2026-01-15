@@ -81,7 +81,24 @@
 
   function wireNav(){
     var loginBtn = document.getElementById('login-header-btn');
-    if (loginBtn){ loginBtn.addEventListener('click', function(){ window.location.href = 'login.html'; }); }
+    if (loginBtn){
+      var isLogged = false;
+      try{
+        isLogged = !!(window.localStorage.getItem('lp_auth_token') || window.localStorage.getItem('lp_auth_user'));
+      }catch(e){}
+      if (isLogged){
+        try{ loginBtn.textContent = 'Logout'; }catch(e){}
+        loginBtn.addEventListener('click', function(){
+          try{ window.localStorage.removeItem('lp_auth_token'); }catch(e){}
+          try{ window.localStorage.removeItem('lp_auth_user'); }catch(e){}
+          // After logout, return to client home
+          window.location.href = 'index.html';
+        });
+      } else {
+        try{ loginBtn.textContent = 'Login'; }catch(e){}
+        loginBtn.addEventListener('click', function(){ window.location.href = 'login.html'; });
+      }
+    }
 
     var roleSelect = document.getElementById('role-header-select');
     if (roleSelect){
@@ -148,7 +165,22 @@
     var btnPresM = document.getElementById('lp-btn-presentation-mobile'); if (btnPresM) btnPresM.addEventListener('click', function(){ go('presentation.html'); });
     var btnMyM = document.getElementById('lp-btn-myorders-mobile'); if (btnMyM) btnMyM.addEventListener('click', function(){ closeMenu(); try{ window.dispatchEvent(new CustomEvent('lp-myorders-requested')); }catch(e){} if (!/index\.html$/i.test(location.pathname)) { try { window.localStorage.setItem('lp_open_myorders','1'); } catch(e) {} window.location.href='index.html'; } window.scrollTo(0,0); });
     var btnProfM = document.getElementById('lp-btn-profile-mobile'); if (btnProfM) btnProfM.addEventListener('click', function(){ go('profile.html'); });
-    var btnLoginM = document.getElementById('lp-btn-login-mobile'); if (btnLoginM) btnLoginM.addEventListener('click', function(){ go('login.html'); });
+    var btnLoginM = document.getElementById('lp-btn-login-mobile');
+    if (btnLoginM){
+      var isLoggedM = false;
+      try{ isLoggedM = !!(window.localStorage.getItem('lp_auth_token') || window.localStorage.getItem('lp_auth_user')); }catch(e){}
+      if (isLoggedM){
+        try{ btnLoginM.textContent = 'Logout'; }catch(e){}
+        btnLoginM.addEventListener('click', function(){
+          try{ window.localStorage.removeItem('lp_auth_token'); }catch(e){}
+          try{ window.localStorage.removeItem('lp_auth_user'); }catch(e){}
+          go('index.html');
+        });
+      } else {
+        try{ btnLoginM.textContent = 'Login'; }catch(e){}
+        btnLoginM.addEventListener('click', function(){ go('login.html'); });
+      }
+    }
 
     var roleSelM = document.getElementById('lp-role-select-mobile');
     try {
