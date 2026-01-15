@@ -152,13 +152,14 @@
   <main class="layout">
     <aside class="steps-list">
       <h2>Étapes du parcours</h2>
-      <button class="step-link" data-step="0"><span>1.</span> Page boutique (index.html)</button>
-      <button class="step-link" data-step="1"><span>2.</span> Page login (login.html)</button>
-      <button class="step-link" data-step="2"><span>3.</span> Page reset mot de passe (reset-password.html)</button>
-      <button class="step-link" data-step="3"><span>4.</span> Page profil & crédit (profile.html)</button>
-      <button class="step-link" data-step="4"><span>5.</span> Page liste commandes (orders.html)</button>
-      <button class="step-link" data-step="5"><span>6.</span> Page préparation commande (prepare.html)</button>
-      <button class="step-link" data-step="6"><span>7.</span> Tarification du projet</button>
+      <button class="step-link" data-step="0"><span>1.</span> Parcours global</button>
+      <button class="step-link" data-step="1"><span>2.</span> Page boutique (index.html)</button>
+      <button class="step-link" data-step="2"><span>3.</span> Page login (login.html)</button>
+      <button class="step-link" data-step="3"><span>4.</span> Page reset mot de passe (reset-password.html)</button>
+      <button class="step-link" data-step="4"><span>5.</span> Page profil & crédit (profile.html)</button>
+      <button class="step-link" data-step="5"><span>6.</span> Page liste commandes (orders.html)</button>
+      <button class="step-link" data-step="6"><span>7.</span> Page préparation commande (prepare.html)</button>
+      <button class="step-link" data-step="7"><span>8.</span> Tarification du projet</button>
     </aside>
 
     <section class="content-card" id="presentation-content" aria-live="polite">
@@ -189,6 +190,18 @@
       // Steps data (UI text in French, code in English)
       // Each step now maps clearly to one concrete HTML page.
       var steps = [
+        {
+          title: 'Parcours global',
+          html: '<p>Vue d\'ensemble du processus, du panier client jusqu\'à la confirmation de réception.</p>' +
+            '<ul>' +
+            '<li><strong>Client</strong> ajoute des produits et passe commande sur <a href="index.html" target="_blank">index.html</a>.</li>' +
+            '<li><strong>Paiement / Mode</strong> choisi (démo) : en ligne, carte, ou en magasin.</li>' +
+            '<li><strong>Shop/Admin</strong> voit la commande dans <a href="orders.html" target="_blank">orders.html</a>, prépare la commande dans <a href="prepare.html?orderId=1" target="_blank">prepare.html</a>.</li>' +
+            '<li>Quand prête, la commande passe à <em>READY_FOR_DELIVERY</em> et apparaît dans <a href="delivery-list.html" target="_blank">delivery-list.html</a>.</li>' +
+            '<li><strong>Livreur</strong> remet la commande au client; le client scanne le QR généré sur ses commandes (ou le livreur simule via <em>Scanner le QR</em>), ouvrant <a href="delivery.html?code=XXXX" target="_blank">delivery.html</a>.</li>' +
+            '<li><strong>Confirmation</strong> via l\'API: la commande devient <em>COMPLETED</em>.</li>' +
+            '</ul>'
+        },
         {
           title: 'Page boutique (index.html)',
           html: '<p>Vue principale de la boutique client.</p>' +
