@@ -203,7 +203,12 @@
             '<li>Quand prête, la commande passe à <em>READY_FOR_DELIVERY</em> et apparaît dans <a href="delivery-list.html" target="_blank">delivery-list.html</a>.</li>' +
             '<li><strong>Livreur</strong> remet la commande au client; le client scanne le QR généré sur ses commandes (ou le livreur simule via <em>Scanner le QR</em>), ouvrant <a href="delivery.html?code=XXXX" target="_blank">delivery.html</a>.</li>' +
             '<li><strong>Confirmation</strong> via l\'API: la commande devient <em>COMPLETED</em>.</li>' +
-            '</ul>'
+            '</ul>' +
+            '<div style="display:flex;gap:0.75rem;align-items:center;margin-top:0.5rem;flex-wrap:wrap;">' +
+            '<div style="flex:1 1 120px;max-width:200px;text-align:center;"><img src="image/client1.png" alt="Client" style="max-width:100%;height:auto;border-radius:6px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.1);" /><div style="font-size:0.8rem;margin-top:0.25rem;">Client</div></div>' +
+            '<div style="flex:1 1 120px;max-width:200px;text-align:center;"><img src="image/shop1.png" alt="Magasin" style="max-width:100%;height:auto;border-radius:6px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.1);" /><div style="font-size:0.8rem;margin-top:0.25rem;">Magasin</div></div>' +
+            '<div style="flex:1 1 120px;max-width:200px;text-align:center;"><img src="image/liver1.png" alt="Livreur" style="max-width:100%;height:auto;border-radius:6px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.1);" /><div style="font-size:0.8rem;margin-top:0.25rem;">Livreur</div></div>' +
+            '</div>'
         },
         {
           title: 'Page boutique (index.html)',
@@ -214,7 +219,8 @@
             '<li>Colonne gauche&nbsp;: catégories et <strong>panier</strong> avec bouton <em>Mes commandes (démo)</em>.</li>' +
             '<li>Colonne droite&nbsp;: liste de produits avec quantités et bouton <em>Ajouter au panier</em>.</li>' +
             '<li>Bouton <strong>Passer à la commande (démo)</strong> pour accéder au checkout.</li>' +
-            '</ul>'
+            '</ul>' +
+            '<img src="image/client2.png" alt="Client – Boutique" style="max-width:100%;height:auto;border-radius:6px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.08);" />'
         },
         {
           title: 'Page login (login.html)',
@@ -258,7 +264,8 @@
             '<li>Filtrage côté front pour n\'afficher que les commandes du <strong>shopId</strong> du compte connecté.</li>' +
             '<li>Affichage des statuts, montants, et liens vers la préparation de commande.</li>' +
             '<li>Page pensée pour le personnel de magasin / administrateur.</li>' +
-            '</ul>'
+            '</ul>' +
+            '<img src="image/shop2.png" alt="Magasin – Liste des commandes" style="max-width:100%;height:auto;border-radius:6px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.08);" />'
         },
         {
           title: 'Page préparation commande (prepare.html)',
@@ -269,7 +276,8 @@
             '<li>Vérification que le compte connecté appartient bien au magasin de la commande.</li>' +
             '<li>Boutons pour faire évoluer le statut (préparation, prêt pour livraison, etc.).</li>' +
             '<li>Permet de montrer le flux complet côté magasin, sans impacter de vraies données.</li>' +
-            '</ul>'
+            '</ul>' +
+            '<img src="image/shop3.png" alt="Magasin – Préparation" style="max-width:100%;height:auto;border-radius:6px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.08);" />'
         },
         {
           title: 'Page livraison – liste (delivery-list.html)',
@@ -279,7 +287,8 @@
             '<li>Affiche code commande, client, adresse, total, statut.</li>' +
             '<li>Bouton <em>Détails / préparation</em> pour voir les articles, créneau, etc.</li>' +
             '<li>Bouton <em>Scanner le QR du client (démo)</em> pour ouvrir la page de confirmation (simulation).</li>' +
-            '</ul>'
+            '</ul>' +
+            '<img src="image/liver2.png" alt="Livreur – Liste de livraison" style="max-width:100%;height:auto;border-radius:6px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.08);" />'
         },
         {
           title: 'Confirmation de livraison – QR (delivery.html)',
@@ -289,7 +298,8 @@
             '<li>Le scan ouvre <a href="delivery.html?code=XXXX" target="_blank">delivery.html</a> qui appelle l\'API <code>POST /api/orders/deliver/:code</code>.</li>' +
             '<li>Si OK, la commande passe à <strong>COMPLETED</strong> (terminée).</li>' +
             '<li>Fonctionne également via la simulation depuis la liste livreur.</li>' +
-            '</ul>'
+            '</ul>' +
+            '<img src="image/liver1.png" alt="Confirmation par QR" style="max-width:100%;height:auto;border-radius:6px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.08);" />'
         },
         {
           title: 'Tarification du projet',
