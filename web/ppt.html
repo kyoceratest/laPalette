@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Générer le PowerPoint – La Palette</title>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <style>
+    body { font-family: Montserrat, system-ui, -apple-system, Segoe UI, sans-serif; background:#f5f5f5; color:#222; margin:0; }
+    .wrap { max-width: 960px; margin: 1rem auto; padding: 1rem; }
+    .card { background:#fff; border-radius:6px; box-shadow:0 1px 3px rgba(0,0,0,0.08); padding:1rem 1.25rem; }
+    h1 { font-size: 1.25rem; margin: 0 0 0.5rem; }
+    p { margin: 0.25rem 0; }
+    .grid { display:grid; grid-template-columns: 1fr 1fr; gap:0.5rem; }
+    label { font-size:.85rem; color:#333; display:block; margin-top:0.5rem; }
+    input[type="text"] { width:100%; padding:0.45rem 0.6rem; border:1px solid #e5e7eb; border-radius:6px; }
+    .actions { margin-top: 0.75rem; display:flex; gap:0.5rem; align-items:center; }
+    button { background:#e0001a; color:#fff; border:none; border-radius:999px; padding:0.5rem 0.9rem; cursor:pointer; font-weight:600; }
+    button:disabled { opacity: .6; cursor: not-allowed; }
+    .note { font-size:.9rem; color:#555; margin-top:.5rem; }
+    .small { font-size:.8rem; color:#666; }
+  </style>
+</head>
+<body>
+  <script src="config.js?v=20260115"></script>
+  <script defer src="header.js"></script>
+
+  <div class="wrap">
+    <div class="card">
+      <h1>Générer le PowerPoint – La Palette</h1>
+      <p>Ce générateur crée une présentation client (.pptx) en utilisant le style du site et les visuels du dossier <code>web/image</code>.</p>
+      <div class="grid">
+        <div>
+          <label for="tagline">Tagline (optionnel)</label>
+          <input type="text" id="tagline" placeholder="Présentation client – Click & Collect + Delivery" />
+        </div>
+        <div>
+          <label for="presenter">Présenté par (optionnel)</label>
+          <input type="text" id="presenter" placeholder="Votre nom / équipe" />
+        </div>
+      </div>
+      <div class="actions">
+        <button id="genBtn">Générer le PowerPoint</button>
+      </div>
+      <div class="note">Le fichier sera téléchargé localement. Aucune donnée n'est envoyée à un serveur.</div>
+      <div class="small">Librairie utilisée: PptxGenJS (chargée via CDN). Nous pouvons la rapatrier en local ultérieurement si souhaité.</div>
+    </div>
+  </div>
+
+  <!-- PptxGenJS from CDN for quick generation; can be vendored locally later -->
+  <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.min.js"></script>
+  <script>
+    (function(){
+      function img(path){ return path; }
+      function addTitleSlide(pptx, logoPath, tagline, presenter){
+        var slide = pptx.addSlide();
+        slide.addText('La Palette – Click & Collect + Delivery (Démo)', { x:0.5, y:0.6, w:9, fontSize:28, bold:true, color:'1F2937', fontFace:'Montserrat' });
+        slide.addText(tagline || 'Présentation client', { x:0.5, y:1.3, w:9, fontSize:18, color:'374151', fontFace:'Montserrat' });
+        if (logoPath) {
+          slide.addImage({ path: logoPath, x:9.0-2.0, y:0.3, w:1.6, h:1.6, rounding:5 });
+        }
+        slide.addShape(pptx.shapes.ROUNDED_RECTANGLE, { x:0.5, y:2.0, w:9.0, h:0.25, fill:'E0001A', line:'E0001A' });
+        if (presenter) {
+          slide.addText('Présenté par: ' + presenter, { x:0.5, y:2.4, w:9, fontSize:14, color:'4B5563', fontFace:'Montserrat' });
+        }
+      }
+      function addBullets(slide, title, bullets){
+        slide.addText(title, { x:0.6, y:0.5, w:8.5, fontSize:22, bold:true, color:'111111', fontFace:'Montserrat' });
+        var y = 1.1;
+        slide.addText(bullets, { x:0.7, y:y, w:8.3, fontSize:16, color:'333333', bullet:true, lineSpacingMultiple:1.15, fontFace:'Montserrat' });
+      }
+      function addImageSlide(pptx, title, imgPath, captions){
+        var slide = pptx.addSlide();
+        slide.addText(title, { x:0.6, y:0.5, w:8.5, fontSize:22, bold:true, color:'111111', fontFace:'Montserrat' });
+        slide.addImage({ path: imgPath, x:0.9, y:1.1, w:7.5, h:4.2, sizing: { type:'contain', w:7.5, h:4.2 }, rounding:6, shadow:{ type:'outer', opacity:30, blur:4 } });
+        if (captions && captions.length){
+          slide.addText(captions, { x:0.9, y:5.4, w:7.5, fontSize:14, color:'555555', bullet:true, fontFace:'Montserrat' });
+        }
+      }
+      function addPricingSlide(pptx){
+        var slide = pptx.addSlide();
+        slide.addText('Tarification (EUR)', { x:0.6, y:0.5, w:8.5, fontSize:22, bold:true, color:'111111', fontFace:'Montserrat' });
+        var items = [
+          { title:'MVP', price:'2\u202f500 € – 4\u202f500 €', desc:['Site + API fonctionnels','Flux commande → préparation → livraison (QR)','Déploiement de base (Render + GitHub Pages)'] },
+          { title:'Business', price:'5\u202f000 € – 9\u202f000 €', desc:['Validation renforcée, accessibilité AA','Emails transactionnels, journalisation','SEO basique, 1 mois de support'] },
+          { title:'Pro', price:'10\u202f000 € – 18\u202f000 €', desc:['Reporting & back-office avancé','Tests auto (API/E2E), CI/CD + staging','Formation & handover'] },
+          { title:'Maintenance', price:'400 € – 600 €/mois', desc:['Surveillance, sauvegardes','Petites corrections & mises à jour'] },
+        ];
+        var x = 0.6, y = 1.0, colW = 4.2, rowH = 2.1;
+        for (var i=0;i<items.length;i++){
+          var c = i % 2, r = Math.floor(i/2);
+          var bx = x + c * colW;
+          var by = y + r * rowH;
+          slide.addShape(pptx.shapes.ROUNDED_RECTANGLE, { x:bx, y:by, w:colW-0.4, h:rowH-0.3, fill:'FFFFFF', line:'E5E7EB', shadow:{ type:'outer', opacity:20, blur:3 } });
+          slide.addText(items[i].title + ' · ' + items[i].price, { x:bx+0.2, y:by+0.15, w:colW-0.8, fontSize:16, bold:true, color:'111111', fontFace:'Montserrat' });
+          slide.addText(items[i].desc, { x:bx+0.25, y:by+0.55, w:colW-0.9, fontSize:14, color:'333333', bullet:true, fontFace:'Montserrat' });
+        }
+      }
+      function addSecuritySlide(pptx){
+        var slide = pptx.addSlide();
+        addBullets(slide, 'Sécurité', [
+          'HTTPS, séparation Front (GitHub Pages) / API (Render)',
+          'Jetons d\'authentification, rôles (CLIENT/SHOP/ADMIN/DELIVERY)',
+          'Validation input côté client & serveur',
+          'À venir: rate limiting, audit logs, gestion secrets renforcée'
+        ]);
+      }
+      function addPrivacySlide(pptx){
+        var slide = pptx.addSlide();
+        addBullets(slide, 'Protection des données', [
+          'Démo: PII minimale, mots de passe non persistés',
+          'Aucune donnée analytics côté client',
+          'À venir: DPA, politique de rétention, droits des personnes'
+        ]);
+      }
+      function addArchitectureSlide(pptx){
+        var slide = pptx.addSlide();
+        addBullets(slide, 'Architecture & Déploiement', [
+          'Frontend: GitHub Pages (site statique, config.js pour API_BASE)',
+          'Backend: Node/Express sur Render, base PostgreSQL (Neon)',
+          'Réveil API léger (warm-up) pour réduire la latence à froid'
+        ]);
+      }
+
+      function generate(){
+        var btn = document.getElementById('genBtn');
+        btn.disabled = true;
+        btn.textContent = 'Génération…';
+        try {
+          var pptx = new PptxGenJS();
+          pptx.author = 'La Palette';
+          pptx.company = 'La Palette';
+          pptx.title = 'La Palette – Démo';
+
+          var logo = img('image/logoCDC.png');
+          var tagline = document.getElementById('tagline') ? document.getElementById('tagline').value.trim() : '';
+          var presenter = document.getElementById('presenter') ? document.getElementById('presenter').value.trim() : '';
+
+          addTitleSlide(pptx, logo, tagline, presenter);
+          // Executive summary
+          var s1 = pptx.addSlide();
+          addBullets(s1, 'Résumé exécutif', [
+            'Amélioration de l\'expérience client (commande → livraison)',
+            'Réduction des erreurs et délais côté magasin',
+            'Confirmation de livraison par QR, traçabilité simple'
+          ]);
+          // Pain points
+          var s2 = pptx.addSlide();
+          addBullets(s2, 'Problématiques actuelles', [
+            'Complexité des commandes et échanges incomplets',
+            'Retards et manque de visibilité sur l\'état',
+            'Confirmation de remise non systématique'
+          ]);
+          // Solution overview
+          addImageSlide(pptx, 'Vue d\'ensemble – Rôles', 'image/client1.png', ['Client – Commande en ligne']);
+          addImageSlide(pptx, 'Vue d\'ensemble – Rôles', 'image/shop1.png', ['Magasin – Préparation']);
+          addImageSlide(pptx, 'Vue d\'ensemble – Rôles', 'image/liver1.png', ['Livraison – Remise & confirmation QR']);
+          // Client experience
+          addImageSlide(pptx, 'Expérience client – Boutique', 'image/client2.png', ['Ajout panier, checkout, Mes commandes, QR']);
+          // Login & roles
+          addImageSlide(pptx, 'Login & Rôles', 'image/all1.png', ['CLIENT / SHOP / ADMIN / DELIVERY']);
+          // Profile & Credit
+          addImageSlide(pptx, 'Profil & Crédit', 'image/all3.png', ['Crédit visible (démo), édition profil']);
+          // Shop – orders
+          addImageSlide(pptx, 'Back-office – Liste des commandes', 'image/shop2.png');
+          // Prepare order
+          addImageSlide(pptx, 'Back-office – Préparation de commande', 'image/shop3.png');
+          // Delivery list
+          addImageSlide(pptx, 'Livraison – Liste', 'image/liver2.png');
+          // QR confirmation
+          addImageSlide(pptx, 'Confirmation par QR', 'image/liver1.png');
+          // Architecture
+          addArchitectureSlide(pptx);
+          // Security
+          addSecuritySlide(pptx);
+          // Privacy
+          addPrivacySlide(pptx);
+          // Pricing
+          addPricingSlide(pptx);
+          // Roadmap
+          var s3 = pptx.addSlide();
+          addBullets(s3, 'Feuille de route & prochaines étapes', [
+            'Ce qui est prêt: parcours complet démo, déploiement',
+            'Niveau Business: validations, accessibilité, emails prod, SEO, logs',
+            'Niveau Pro: reporting, admin avancé, tests auto, CI/CD + staging'
+          ]);
+
+          pptx.writeFile({ fileName: 'LaPalette_Demo.pptx' }).then(function(){
+            btn.disabled = false;
+            btn.textContent = 'Générer le PowerPoint';
+          }).catch(function(){
+            btn.disabled = false;
+            btn.textContent = 'Réessayer – Générer le PowerPoint';
+          });
+        } catch (e) {
+          console.error(e);
+          btn.disabled = false;
+          btn.textContent = 'Réessayer – Générer le PowerPoint';
+          alert('Erreur pendant la génération. Ouvrez la console pour le détail.');
+        }
+      }
+
+      document.addEventListener('DOMContentLoaded', function(){
+        var btn = document.getElementById('genBtn');
+        if (btn) btn.addEventListener('click', generate);
+      });
+    })();
+  </script>
+</body>
+</html>
