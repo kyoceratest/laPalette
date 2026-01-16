@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Vidéo démo – La Palette</title>
+  <style>
+    body { margin:0; background:#111; color:#fff; font-family: Montserrat, system-ui, -apple-system, Segoe UI, sans-serif; }
+    .wrap { max-width:1100px; margin:0 auto; padding: 0 1rem 2rem; }
+    header { position:sticky; top:0; background:#111; padding:0.75rem 0; z-index:2; }
+    h1 { font-size:1.2rem; margin:.25rem 0 .5rem; }
+    .panel { background:#1c1c1c; border:1px solid #2a2a2a; border-radius:8px; padding:0.75rem; margin-bottom:1rem; }
+    .row { display:flex; flex-wrap:wrap; gap:0.75rem; align-items:center; }
+    label { font-size:0.9rem; color:#ddd; }
+    input[type="file"], textarea, input[type="text"] { background:#111; color:#eee; border:1px solid #333; border-radius:6px; padding:0.5rem; }
+    textarea { width:100%; min-height:70px; resize:vertical; }
+    button { background:#e0001a; color:#fff; border:none; border-radius:999px; padding:0.5rem .9rem; font-weight:600; cursor:pointer; }
+    button.secondary { background:#343a40; }
+    .grid { display:grid; grid-template-columns: 1fr; gap:0.5rem; }
+    @media (min-width: 860px){ .grid { grid-template-columns: repeat(2, 1fr); } }
+
+    .stage { position:relative; background:#000; border-radius:8px; overflow:hidden; aspect-ratio:16/9; width:100%; max-width:1000px; margin:0 auto; box-shadow:0 8px 30px rgba(0,0,0,.35); }
+    canvas { width:100%; height:100%; display:block; background:#000; }
+    .note { font-size:0.85rem; color:#bbb; }
+  </style>
+</head>
+<body>
+  <script src="config.js?v=20260115"></script>
+  <script defer src="header.js"></script>
+
+  <div class="wrap">
+    <header>
+      <h1>Générateur de vidéo démo (narration + avatar)</h1>
+      <div class="note">Crée une vidéo .webm (Chrome) racontant le parcours: commande client → préparation → livraison → facture. Aucune donnée n'est envoyée à un serveur.</div>
+    </header>
+
+    <div class="panel">
+      <div class="row">
+        <div>
+          <label>Avatar (photo visage, optionnel):
+            <input type="file" id="avatarInput" accept="image/*" />
+          </label>
+        </div>
+        <div>
+          <label>Voix (narration):
+            <input type="text" id="voiceLang" value="fr-FR" title="Lang code e.g. fr-FR, en-US" />
+          </label>
+        </div>
+        <div>
+          <button id="previewBtn">Aperçu lecture</button>
+          <button id="recordBtn">Enregistrer la vidéo</button>
+          <button id="stopBtn" class="secondary">Stop</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="grid" id="scenesGrid"></div>
+      <div class="note">Vous pouvez modifier les textes avant l'enregistrement. Images chargées depuis web/image/</div>
+    </div>
+
+    <div class="stage"><canvas id="stage" width="1280" height="720"></canvas></div>
+  </div>
+
+  <script>
+    (function(){
+      // Default scenes using existing repo images
+      var scenes = [
+        { img: 'image/client2.png', text: "Je suis la cliente. J'explore la boutique La Palette, j'ajoute des produits et je passe ma commande." },
+        { img: 'image/all1.png', text: "Je me connecte à mon compte. Le système me reconnaît et je retrouve mes commandes." },
+        { img: 'image/shop2.png', text: "Côté magasin, l'équipe voit ma commande dans la liste et prépare les articles." },
+        { img: 'image/shop3.png', text: "La préparation est terminée. Le statut passe à 'prêt pour livraison'." },
+        { img: 'image/liver2.png', text: "Le livreur récupère la commande prête et consulte sa liste de livraisons." },
+        { img: 'image/liver1.png', text: "À la remise, je scanne le QR. La commande passe à 'Terminée'." },
+        { img: 'image/all3.png', text: "Je consulte mon profil et ma facture. Je peux enregistrer ou imprimer l'aperçu d'édition." }
+      ];
+
+      // Build editable form
+      var grid = document.getElementById('scenesGrid');
+      function buildSceneEditors(){
+        grid.innerHTML = '';
+        scenes.forEach(function(s, idx){
+          var wrap = document.createElement('div');
+          wrap.className = 'panel';
+          wrap.innerHTML = '<label>Image scène ' + (idx+1) + ' <small>(' + s.img + ')</small></label>' +
+            '<div class="row"><input type="text" value="'+ s.img +'" data-idx="'+idx+'" class="imgPath" style="flex:1;min-width:260px"/></div>'+
+            '<label>Texte voix-off</label>'+
+            '<textarea class="sceneText" data-idx="'+idx+'">'+ s.text +'</textarea>';
+          grid.appendChild(wrap);
+        });
+      }
+      buildSceneEditors();
+
+      // Update handlers
+      grid.addEventListener('input', function(e){
+        if (e.target.classList.contains('imgPath')){
+          var i = +e.target.getAttribute('data-idx');
+          scenes[i].img = e.target.value.trim();
+        }
+        if (e.target.classList.contains('sceneText')){
+          var i2 = +e.target.getAttribute('data-idx');
+          scenes[i2].text = e.target.value;
+        }
+      });
+
+      // Canvas renderer
+      var canvas = document.getElementById('stage');
+      var ctx = canvas.getContext('2d');
+
+      function loadImage(src){
+        return new Promise(function(resolve){
+          var img = new Image();
+          img.crossOrigin = 'anonymous';
+          img.onload = function(){ resolve(img); };
+          img.onerror = function(){ resolve(null); };
+          img.src = src;
+        });
+      }
+
+      function drawRoundImage(img, x, y, r){
+        if (!img) return;
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(x + r, y + r, r, 0, Math.PI*2);
+        ctx.closePath();
+        ctx.clip();
+        ctx.drawImage(img, x, y, r*2, r*2);
+        ctx.restore();
+        ctx.strokeStyle = 'rgba(255,255,255,0.85)';
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.arc(x + r, y + r, r, 0, Math.PI*2);
+        ctx.stroke();
+      }
+
+      function wrapText(text, x, y, maxWidth, lineHeight){
+        var words = (text||'').split(' ');
+        var line = '';
+        for (var n=0; n<words.length; n++){
+          var testLine = line + words[n] + ' ';
+          var metrics = ctx.measureText(testLine);
+          if (metrics.width > maxWidth && n>0){
+            ctx.fillText(line, x, y);
+            line = words[n] + ' ';
+            y += lineHeight;
+          } else {
+            line = testLine;
+          }
+        }
+        ctx.fillText(line, x, y);
+      }
+
+      function drawScene(bgImg, avatarImg, text){
+        // background
+        ctx.fillStyle = '#000';
+        ctx.fillRect(0,0,canvas.width,canvas.height);
+        if (bgImg){
+          // cover
+          var cw = canvas.width, ch = canvas.height;
+          var iw = bgImg.width, ih = bgImg.height;
+          var scale = Math.max(cw/iw, ch/ih);
+          var w = iw*scale, h = ih*scale;
+          var dx = (cw - w)/2, dy = (ch - h)/2;
+          ctx.globalAlpha = 0.95;
+          ctx.drawImage(bgImg, dx, dy, w, h);
+          ctx.globalAlpha = 1;
+        }
+        // caption box
+        ctx.fillStyle = 'rgba(0,0,0,0.55)';
+        ctx.fillRect(40, ch-200, cw-80, 160);
+        // text
+        ctx.fillStyle = '#fff';
+        ctx.font = '24px Montserrat, sans-serif';
+        wrapText(text, 60, ch-160, cw-260, 34);
+        // avatar
+        if (avatarImg){ drawRoundImage(avatarImg, cw-180, ch-190, 60); }
+      }
+
+      // Simple speech helper
+      function speak(text, lang){
+        return new Promise(function(resolve){
+          if (!window.speechSynthesis){ return resolve(); }
+          var u = new SpeechSynthesisUtterance(text);
+          u.lang = lang || 'fr-FR';
+          u.onend = function(){ resolve(); };
+          try { speechSynthesis.speak(u); } catch(e){ resolve(); }
+        });
+      }
+
+      // Playback controller
+      var avatarImgEl = null;
+      document.getElementById('avatarInput').addEventListener('change', function(e){
+        var f = e.target.files && e.target.files[0];
+        if (!f) { avatarImgEl = null; return; }
+        var reader = new FileReader();
+        reader.onload = function(){
+          var img = new Image();
+          img.onload = function(){ avatarImgEl = img; };
+          img.src = reader.result;
+        };
+        reader.readAsDataURL(f);
+      });
+
+      var playing = false;
+      async function playScenes(recording){
+        if (playing) return; playing = true;
+        var lang = (document.getElementById('voiceLang').value||'fr-FR').trim();
+        var chunksPerScene = 90; // ~3s at 30fps baseline
+        var fps = 30;
+        for (var i=0;i<scenes.length;i++){
+          var s = scenes[i];
+          var bg = await loadImage(s.img);
+          for (var t=0;t<chunksPerScene;t++){
+            drawScene(bg, avatarImgEl, s.text);
+            if (recording) await new Promise(r=>setTimeout(r, 1000/fps));
+            else await new Promise(r=>requestAnimationFrame(r));
+          }
+          await speak(s.text, lang);
+          if (!playing) break;
+        }
+        playing = false;
+      }
+
+      document.getElementById('previewBtn').addEventListener('click', function(){ playScenes(false); });
+
+      // Recording using MediaRecorder from canvas stream
+      var mediaRecorder = null, recorded = [];
+      async function startRecording(){
+        if (mediaRecorder && mediaRecorder.state === 'recording') return;
+        recorded = [];
+        var stream = canvas.captureStream(30);
+        mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm;codecs=vp9' });
+        mediaRecorder.ondataavailable = function(e){ if (e.data && e.data.size) recorded.push(e.data); };
+        mediaRecorder.onstop = function(){
+          var blob = new Blob(recorded, { type: 'video/webm' });
+          var url = URL.createObjectURL(blob);
+          var a = document.createElement('a');
+          a.href = url; a.download = 'LaPalette_Demo.webm'; a.click();
+          URL.revokeObjectURL(url);
+        };
+        mediaRecorder.start();
+        await playScenes(true);
+        if (mediaRecorder && mediaRecorder.state === 'recording') mediaRecorder.stop();
+      }
+
+      document.getElementById('recordBtn').addEventListener('click', startRecording);
+      document.getElementById('stopBtn').addEventListener('click', function(){
+        playing = false;
+        if (mediaRecorder && mediaRecorder.state === 'recording') mediaRecorder.stop();
+      });
+    })();
+  </script>
+</body>
+</html>
