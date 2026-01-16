@@ -70,13 +70,13 @@
     (function(){
       // Default scenes using existing repo images
       var scenes = [
-        { img: 'image/client2.png', text: "Je suis la cliente. J'explore la boutique La Palette, j'ajoute des produits et je passe ma commande.", durationSec: 3.5, zoom: true, highlight: null },
-        { img: 'image/all1.png', text: "Je me connecte à mon compte. Le système me reconnaît et je retrouve mes commandes.", durationSec: 3.2, zoom: true, highlight: null },
-        { img: 'image/shop2.png', text: "Côté magasin, l'équipe voit ma commande dans la liste et prépare les articles.", durationSec: 3.8, zoom: true, highlight: null },
-        { img: 'image/shop3.png', text: "La préparation est terminée. Le statut passe à 'prêt pour livraison'.", durationSec: 3.2, zoom: true, highlight: null },
-        { img: 'image/liver2.png', text: "Le livreur récupère la commande prête et consulte sa liste de livraisons.", durationSec: 3.2, zoom: true, highlight: null },
-        { img: 'image/liver1.png', text: "À la remise, je scanne le QR. La commande passe à 'Terminée'.", durationSec: 3.2, zoom: true, highlight: null },
-        { img: 'image/all3.png', text: "Je consulte mon profil et ma facture. Je peux enregistrer ou imprimer l'aperçu d'édition.", durationSec: 3.2, zoom: false, highlight: null }
+        { img: 'image/client2.png', text: "La cliente explore la boutique La Palette, ajoute des produits et passe sa commande.", durationSec: 3.5, zoom: true, highlight: null },
+        { img: 'image/all1.png', text: "L'utilisatrice se connecte à son compte et retrouve immédiatement ses commandes.", durationSec: 3.2, zoom: true, highlight: null },
+        { img: 'image/shop2.png', text: "Côté magasin, l'équipe visualise la commande dans la liste et prépare les articles.", durationSec: 3.8, zoom: true, highlight: null },
+        { img: 'image/shop3.png', text: "La préparation est finalisée; le statut passe à ‘prêt pour livraison’.", durationSec: 3.2, zoom: true, highlight: null },
+        { img: 'image/liver2.png', text: "Le livreur récupère la commande prête et consulte sa tournée.", durationSec: 3.2, zoom: true, highlight: null },
+        { img: 'image/liver1.png', text: "Lors de la remise, le QR est scanné et la commande passe au statut ‘Terminée’.", durationSec: 3.2, zoom: true, highlight: null },
+        { img: 'image/all3.png', text: "La cliente accède à son profil, consulte sa facture et peut l'enregistrer ou l'imprimer.", durationSec: 3.2, zoom: false, highlight: null }
       ];
 
       // Build editable form
@@ -295,14 +295,33 @@
         }
       }
 
-      // Simple speech helper
+      // Speech synthesis: pick a natural/professional voice when available
+      var _voices = [];
+      function refreshVoices(){
+        try { _voices = window.speechSynthesis ? window.speechSynthesis.getVoices() || [] : []; } catch(e){ _voices = []; }
+      }
+      if (window.speechSynthesis){
+        refreshVoices();
+        window.speechSynthesis.onvoiceschanged = refreshVoices;
+      }
+      function pickBestVoice(lang){
+        if (!_voices || !_voices.length) return null;
+        var cand = _voices.filter(function(v){ return v.lang && v.lang.toLowerCase().indexOf((lang||'fr-FR').toLowerCase())===0; });
+        // Prefer Google/Enhanced voices if available
+        var pref = cand.find(function(v){ return /google|enhanced|natural/i.test(v.name||''); }) || cand[0];
+        return pref || null;
+      }
       function speak(text, lang){
         return new Promise(function(resolve){
           if (!window.speechSynthesis){ return resolve(); }
-          var u = new SpeechSynthesisUtterance(text);
+          var u = new SpeechSynthesisUtterance(text||'');
           u.lang = lang || 'fr-FR';
+          var v = pickBestVoice(u.lang);
+          if (v) u.voice = v;
+          u.rate = 1.0; u.pitch = 1.0; u.volume = 1.0;
           u.onend = function(){ resolve(); };
-          try { speechSynthesis.speak(u); } catch(e){ resolve(); }
+          u.onerror = function(){ resolve(); };
+          try { window.speechSynthesis.speak(u); } catch(e){ resolve(); }
         });
       }
 
