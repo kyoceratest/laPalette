@@ -98,9 +98,12 @@
             '</div>';
           grid.appendChild(wrap);
         });
+      }
+      buildSceneEditors();
 
-      // Click-to-highlight support
+      // Click-to-highlight support (declare in outer scope so drawScene can access)
       var drawHLIndex = -1; var dragStart = null; var dragCurrent = null;
+      // Register the click handler once
       grid.addEventListener('click', function(e){
         if (e.target.classList.contains('setHlBtn')){
           drawHLIndex = +e.target.getAttribute('data-idx');
@@ -108,8 +111,6 @@
           alert('Mode highlight actif pour la scène '+(drawHLIndex+1)+'. Cliquez-glissez sur la vidéo pour tracer un rectangle.');
         }
       });
-      }
-      buildSceneEditors();
 
       // Update handlers
       grid.addEventListener('input', function(e){
@@ -304,13 +305,17 @@
         for (var i=0;i<seq.length;i++){
           var s = seq[i];
           var bg = await loadImage(s.img);
+          // start narration concurrently; never let it block progression
+          var speakPromise = speak(s.text, lang);
           var frames = Math.max(1, Math.round((s.durationSec||3.2) * fps));
           for (var t=0;t<frames;t++){
             var progress = frames>1 ? (t/(frames-1)) : 1;
             drawScene(bg, avatarImgEl, s.text, progress, s);
             if (recording) await new Promise(r=>setTimeout(r, 1000/fps)); else await new Promise(r=>requestAnimationFrame(r));
           }
-          await speak(s.text, lang);
+          // allow narration some time, but don't hang if speech synthesis never ends
+          var safeWait = Math.max(800, Math.round((s.durationSec||3.2)*1000));
+          await Promise.race([speakPromise, new Promise(function(r){ setTimeout(r, safeWait); })]);
           if (!playing) break;
         }
         playing = false;
