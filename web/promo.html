@@ -270,6 +270,46 @@
           ctx.fillStyle = '#333';
           ctx.font = '28px Montserrat, sans-serif';
           if (scene.subtitle && !(scene.noSubtitle)) wrapText(scene.subtitle, 80, 250, cw-160, 38);
+          // optional body text rendered on the two-tone screen (for intro/outro)
+          if (scene.bodyText){
+            ctx.fillStyle = '#222';
+            ctx.font = '24px Montserrat, sans-serif';
+            wrapText(scene.bodyText, 80, 320, cw-160, 34);
+          }
+          // optional pricing table (simple 4-column grid)
+          if (scene.table && Array.isArray(scene.table.headers) && Array.isArray(scene.table.rows)){
+            var tableTop = 420;
+            var colCount = scene.table.headers.length;
+            var tableLeft = 80;
+            var tableWidth = cw - 160;
+            var colW = tableWidth / Math.max(1,colCount);
+            // header row
+            for (var c=0;c<colCount;c++){
+              var x = tableLeft + c*colW;
+              ctx.fillStyle = '#ffffff';
+              ctx.globalAlpha = 0.9;
+              ctx.fillRect(x, tableTop, colW-12, 44);
+              ctx.globalAlpha = 1;
+              ctx.fillStyle = '#111';
+              ctx.font = 'bold 22px Montserrat, sans-serif';
+              ctx.fillText(String(scene.table.headers[c]||''), x+12, tableTop+30);
+            }
+            // rows
+            var rowH = 40;
+            for (var r=0;r<scene.table.rows.length;r++){
+              var y = tableTop + 44 + r*rowH;
+              for (var c2=0;c2<colCount;c2++){
+                var x2 = tableLeft + c2*colW;
+                // cell background alternating
+                ctx.fillStyle = (r%2===0) ? 'rgba(255,255,255,0.75)' : 'rgba(255,255,255,0.6)';
+                ctx.fillRect(x2, y, colW-12, rowH-4);
+                ctx.fillStyle = '#111';
+                ctx.font = '20px Montserrat, sans-serif';
+                var cell = (scene.table.rows[r] && scene.table.rows[r][c2]) ? String(scene.table.rows[r][c2]) : '';
+                ctx.fillText(cell, x2+12, y+26);
+              }
+            }
+          }
           // logo optional
           // omitted to avoid cross-origin issues from external hosts; images from same site are fine if needed later
         }
@@ -368,12 +408,12 @@
         var useIntro = document.getElementById('useIntro') && document.getElementById('useIntro').checked;
         var useOutro = document.getElementById('useOutro') && document.getElementById('useOutro').checked;
         if (useIntro){
-          seq.push({ twoTone:true, img:null, title:'Shop Chain', subtitle:"Application e‑commerce & supply chain en ligne. Améliore l'expérience client et apporte une visibilité claire du flux de vente.", text:"Bienvenue sur Shop Chain. Une application en ligne qui fluidifie la commande, la préparation et la livraison, avec un suivi clair pour les équipes et une expérience client plus sereine.", durationSec: 4.0, zoom:false });
+          seq.push({ twoTone:true, img:null, title:'Shop Chain', subtitle:"Application e‑commerce & supply chain en ligne. Améliore l'expérience client et apporte une visibilité claire du flux de vente.", text:"Bienvenue sur Shop Chain. Une application en ligne qui fluidifie la commande, la préparation et la livraison, avec un suivi clair pour les équipes et une expérience client plus sereine.", bodyText:"Bienvenue sur Shop Chain. Une application en ligne qui fluidifie la commande, la préparation et la livraison, avec un suivi clair pour les équipes et une expérience client plus sereine.", durationSec: 4.5, zoom:false, noCaption:true });
         }
         // main scenes
         seq = seq.concat(scenes);
         if (useOutro){
-          seq.push({ twoTone:true, img:null, title:'Merci', subtitle:"Présenté par Lai Wah TSE – Cœur du ciel • https://kyoceratest.github.io/cdcwebsite/", text:"Nos services: Digital Marketing, Branding & Design, Strategy & Consulting. Tarifs indicatifs: MVP 2\u202f500–4\u202f500 €, Business 5\u202f000–9\u202f000 €, Pro 10\u202f000–18\u202f000 €, Maintenance 400–600 €/mois.", durationSec: 5.0, zoom:false, noVoice:true, noSubtitle:true, noCaption:true });
+          seq.push({ twoTone:true, img:null, title:'Merci', subtitle:"Présenté par Lai Wah TSE – Cœur du ciel • https://kyoceratest.github.io/cdcwebsite/", text:"Nos services: Digital Marketing, Branding & Design, Strategy & Consulting.", bodyText:"Nos services: Digital Marketing, Branding & Design, Strategy & Consulting.", durationSec: 6.0, zoom:false, noVoice:true, noSubtitle:true, noCaption:true, table:{ headers:['MVP','Business','Pro','Maintenance'], rows:[ ['2\u202f500–4\u202f500 €','5\u202f000–9\u202f000 €','10\u202f000–18\u202f000 €','400–600 €/mois'] ] } });
         }
         for (var i=0;i<seq.length;i++){
           var s = seq[i];
