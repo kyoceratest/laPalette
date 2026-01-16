@@ -87,7 +87,10 @@
           var wrap = document.createElement('div');
           wrap.className = 'panel';
           wrap.innerHTML = '<label>Image scène ' + (idx+1) + ' <small>(' + s.img + ')</small></label>' +
-            '<div class="row"><input type="text" value="'+ s.img +'" data-idx="'+idx+'" class="imgPath" style="flex:1;min-width:260px"/></div>'+
+            '<div class="row">'+
+              '<input type="text" value="'+ s.img +'" data-idx="'+idx+'" class="imgPath" style="flex:1;min-width:260px"/>'+
+              '<input type="file" accept="image/*" class="imgFile" data-idx="'+idx+'" />'+
+            '</div>'+
             '<label>Texte voix-off</label>'+
             '<textarea class="sceneText" data-idx="'+idx+'">'+ s.text +'</textarea>'+
             '<div class="row">'+
@@ -139,6 +142,25 @@
         }
       });
 
+      // Handle image selection via OS file picker per scene
+      grid.addEventListener('change', function(e){
+        if (e.target.classList.contains('imgFile')){
+          var idx = +e.target.getAttribute('data-idx');
+          var file = e.target.files && e.target.files[0];
+          if (!file) return;
+          var reader = new FileReader();
+          reader.onload = function(){
+            scenes[idx].img = reader.result; // data URL avoids CORS
+            // reflect into the text field
+            var inputs = grid.querySelectorAll('input.imgPath[data-idx="'+idx+'"]');
+            if (inputs && inputs[0]) inputs[0].value = file.name + ' (local)';
+            // re-render labels
+            buildSceneEditors();
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+
       // Canvas renderer
       var canvas = document.getElementById('stage');
       var ctx = canvas.getContext('2d');
@@ -149,7 +171,16 @@
           img.crossOrigin = 'anonymous';
           img.onload = function(){ resolve(img); };
           img.onerror = function(){ resolve(null); };
-          img.src = src;
+          // For data URLs or empty sources, assign directly.
+          if (!src || (typeof src === 'string' && src.indexOf('data:') === 0)){
+            img.src = src || '';
+            return;
+          }
+          // cache-bust to ensure latest asset when user replaces files on disk
+          try {
+            var hasQuery = (src||'').indexOf('?') !== -1;
+            img.src = src + (hasQuery ? '&' : '?') + 'v=' + Date.now();
+          } catch(e){ img.src = src; }
         });
       }
 
@@ -200,8 +231,12 @@
           ctx.restore();
           // foreground contain (no crop) + gentle zoom
           var sContain = Math.min(cw/bgImg.width, ch/bgImg.height);
-          var zoom = (scene && scene.zoom) ? 1 + 0.05*progress : 1;
-          var s = sContain * zoom;
+          var zoom = (scene && scene.zoom) ? 1 + 0.03*progress : 1; // slightly softer zoom
+          // avoid upscaling beyond native to keep sharpness
+          var base = Math.min(1, sContain);
+          var s = Math.min(1, base * zoom);
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = 'high';
           var w = bgImg.width*s, h = bgImg.height*s;
           var dx = (cw - w)/2, dy = (ch - h)/2;
           ctx.drawImage(bgImg, dx, dy, w, h);
