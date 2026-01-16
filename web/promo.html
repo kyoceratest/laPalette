@@ -252,7 +252,7 @@
           ctx.fillText(scene.title||'', 80, 200);
           ctx.fillStyle = '#333';
           ctx.font = '28px Montserrat, sans-serif';
-          if (scene.subtitle) wrapText(scene.subtitle, 80, 250, cw-160, 38);
+          if (scene.subtitle && !(scene.noSubtitle)) wrapText(scene.subtitle, 80, 250, cw-160, 38);
           // logo optional
           // omitted to avoid cross-origin issues from external hosts; images from same site are fine if needed later
         }
@@ -277,17 +277,19 @@
           ctx.strokeRect(rx, ry, rw, rh);
           ctx.restore();
         }
-        // caption box (polished)
-        ctx.fillStyle = 'rgba(0,0,0,0.45)';
-        var boxH = 140, pad = 24;
-        ctx.fillRect(40, ch - (boxH + 40), cw - 80, boxH);
-        // text
-        ctx.fillStyle = '#fff';
-        ctx.shadowColor = 'rgba(0,0,0,0.4)';
-        ctx.shadowBlur = 4;
-        ctx.font = '26px Montserrat, sans-serif';
-        wrapText(text, 40+pad, ch - (boxH + 40) + pad + 8, Math.min(1200, cw - 80 - 2*pad - 160), 34);
-        ctx.shadowBlur = 0;
+        // caption box (polished) unless disabled
+        if (!(scene && scene.noCaption)){
+          ctx.fillStyle = 'rgba(0,0,0,0.45)';
+          var boxH = 140, pad = 24;
+          ctx.fillRect(40, ch - (boxH + 40), cw - 80, boxH);
+          // text
+          ctx.fillStyle = '#fff';
+          ctx.shadowColor = 'rgba(0,0,0,0.4)';
+          ctx.shadowBlur = 4;
+          ctx.font = '26px Montserrat, sans-serif';
+          wrapText(text, 40+pad, ch - (boxH + 40) + pad + 8, Math.min(1200, cw - 80 - 2*pad - 160), 34);
+          ctx.shadowBlur = 0;
+        }
         // avatar with subtle bob
         if (avatarImg){
           var bob = Math.sin(progress*2*Math.PI) * 4; // 4px bob
@@ -354,21 +356,21 @@
         // main scenes
         seq = seq.concat(scenes);
         if (useOutro){
-          seq.push({ twoTone:true, img:null, title:'Merci', subtitle:"Présenté par Lai Wah TSE – Cœur du ciel • https://kyoceratest.github.io/cdcwebsite/", text:"Nos services: Digital Marketing, Branding & Design, Strategy & Consulting. Tarifs indicatifs: MVP 2\u202f500–4\u202f500 €, Business 5\u202f000–9\u202f000 €, Pro 10\u202f000–18\u202f000 €, Maintenance 400–600 €/mois.", durationSec: 5.0, zoom:false });
+          seq.push({ twoTone:true, img:null, title:'Merci', subtitle:"Présenté par Lai Wah TSE – Cœur du ciel • https://kyoceratest.github.io/cdcwebsite/", text:"Nos services: Digital Marketing, Branding & Design, Strategy & Consulting. Tarifs indicatifs: MVP 2\u202f500–4\u202f500 €, Business 5\u202f000–9\u202f000 €, Pro 10\u202f000–18\u202f000 €, Maintenance 400–600 €/mois.", durationSec: 5.0, zoom:false, noVoice:true, noSubtitle:true, noCaption:true });
         }
         for (var i=0;i<seq.length;i++){
           var s = seq[i];
           var bg = await loadImage(s.img);
-          // start narration concurrently; never let it block progression
-          var speakPromise = speak(s.text, lang);
+          // start narration concurrently unless disabled; never let it block progression
+          var speakPromise = (s.noVoice || !s.text) ? Promise.resolve() : speak(s.text, lang);
           var frames = Math.max(1, Math.round((s.durationSec||3.2) * fps));
           for (var t=0;t<frames;t++){
             var progress = frames>1 ? (t/(frames-1)) : 1;
             drawScene(bg, avatarImgEl, s.text, progress, s);
             if (recording) await new Promise(r=>setTimeout(r, 1000/fps)); else await new Promise(r=>requestAnimationFrame(r));
           }
-          // allow narration some time, but don't hang if speech synthesis never ends
-          var safeWait = Math.max(800, Math.round((s.durationSec||3.2)*1000));
+          // allow narration some time (if any), but don't hang if speech synthesis never ends
+          var safeWait = (s.noVoice || !s.text) ? 0 : Math.max(800, Math.round((s.durationSec||3.2)*1000));
           await Promise.race([speakPromise, new Promise(function(r){ setTimeout(r, safeWait); })]);
           if (!playing) break;
         }
