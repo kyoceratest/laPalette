@@ -289,8 +289,20 @@
         if (playing) return; playing = true;
         var lang = (document.getElementById('voiceLang').value||'fr-FR').trim();
         var fps = 30;
-        for (var i=0;i<scenes.length;i++){
-          var s = scenes[i];
+        // Build sequence with optional intro/outro
+        var seq = [];
+        var useIntro = document.getElementById('useIntro') && document.getElementById('useIntro').checked;
+        var useOutro = document.getElementById('useOutro') && document.getElementById('useOutro').checked;
+        if (useIntro){
+          seq.push({ twoTone:true, img:null, title:'Shop Chain', subtitle:"Application e‑commerce & supply chain en ligne. Améliore l'expérience client et apporte une visibilité claire du flux de vente.", text:"Bienvenue sur Shop Chain. Une application en ligne qui fluidifie la commande, la préparation et la livraison, avec un suivi clair pour les équipes et une expérience client plus sereine.", durationSec: 4.0, zoom:false });
+        }
+        // main scenes
+        seq = seq.concat(scenes);
+        if (useOutro){
+          seq.push({ twoTone:true, img:null, title:'Merci', subtitle:"Présenté par Lai Wah TSE – Cœur du ciel • https://kyoceratest.github.io/cdcwebsite/", text:"Nos services: Digital Marketing, Branding & Design, Strategy & Consulting. Tarifs indicatifs: MVP 2\u202f500–4\u202f500 €, Business 5\u202f000–9\u202f000 €, Pro 10\u202f000–18\u202f000 €, Maintenance 400–600 €/mois.", durationSec: 5.0, zoom:false });
+        }
+        for (var i=0;i<seq.length;i++){
+          var s = seq[i];
           var bg = await loadImage(s.img);
           var frames = Math.max(1, Math.round((s.durationSec||3.2) * fps));
           for (var t=0;t<frames;t++){
