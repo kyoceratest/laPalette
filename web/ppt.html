@@ -79,7 +79,11 @@
         var slide = pptx.addSlide();
         slide.background = { color: BG_SOLID };
         slide.addText(title, { x:0.6, y:0.5, w:8.5, fontSize:22, bold:true, color:'111111', fontFace:'Montserrat' });
-        slide.addImage({ path: imgPath, x:0.9, y:1.1, w:7.5, h:4.2, sizing: { type:'contain', w:7.5, h:4.2 }, rounding:6, shadow:{ type:'outer', opacity:0.3, blur:4 } });
+        // Preserve aspect ratio by specifying width only and letting PptxGenJS keep native ratio.
+        // Center horizontally; avoid heavy upscaling for small images to reduce blur.
+        var imgW = 7.2; // in inches, slightly smaller for crisper look with low-res sources
+        var xCenter = (10 - imgW) / 2; // slide is 10in wide
+        slide.addImage({ path: imgPath, x:xCenter, y:1.1, w:imgW, rounding:6, shadow:{ type:'outer', opacity:0.25, blur:3 } });
         if (captions && captions.length){
           var cap = Array.isArray(captions) ? captions.map(function(t){ return '\u2022 ' + t; }).join('\n') : String(captions);
           slide.addText(cap, { x:0.9, y:5.4, w:7.5, fontSize:14, color:'555555', fontFace:'Montserrat' });
