@@ -78,6 +78,8 @@
         { img: 'image/liver1.png', text: "Lors de la remise, le QR est scanné et la commande passe au statut ‘Terminée’.", durationSec: 3.2, zoom: true, highlight: null },
         { img: 'image/all3.png', text: "La cliente accède à son profil, consulte sa facture et peut l'enregistrer ou l'imprimer.", durationSec: 3.2, zoom: false, highlight: null }
       ];
+      // keep a reference to default repo images for easy reset
+      scenes.forEach(function(s){ s.defaultImg = s.img; });
 
       // Build editable form
       var grid = document.getElementById('scenesGrid');
@@ -86,10 +88,14 @@
         scenes.forEach(function(s, idx){
           var wrap = document.createElement('div');
           wrap.className = 'panel';
-          wrap.innerHTML = '<label>Image scène ' + (idx+1) + ' <small>(' + s.img + ')</small></label>' +
+          var labelText = (s.img && typeof s.img === 'string' && s.img.indexOf('data:') === 0)
+            ? ((s.imgName||'fichier local') + ' (local)')
+            : (s.img||'');
+          wrap.innerHTML = '<label>Image scène ' + (idx+1) + ' <small>(' + labelText + ')</small></label>' +
             '<div class="row">'+
-              '<input type="text" value="'+ s.img +'" data-idx="'+idx+'" class="imgPath" style="flex:1;min-width:260px"/>'+
+              '<input type="text" '+ (s.img && s.img.indexOf('data:')===0 ? 'placeholder="fichier local sélectionné" value=""' : 'value="'+ s.img +'"') +' data-idx="'+idx+'" class="imgPath" style="flex:1;min-width:260px"/>'+
               '<input type="file" accept="image/*" class="imgFile" data-idx="'+idx+'" />'+
+              '<button type="button" class="resetImgBtn" data-idx="'+idx+'">Réinitialiser</button>'+
             '</div>'+
             '<label>Texte voix-off</label>'+
             '<textarea class="sceneText" data-idx="'+idx+'">'+ s.text +'</textarea>'+
@@ -119,7 +125,8 @@
       grid.addEventListener('input', function(e){
         if (e.target.classList.contains('imgPath')){
           var i = +e.target.getAttribute('data-idx');
-          scenes[i].img = e.target.value.trim();
+          var val = (e.target.value||'').trim();
+          if (val){ scenes[i].img = val; scenes[i].imgName = null; }
         }
         if (e.target.classList.contains('sceneText')){
           var i2 = +e.target.getAttribute('data-idx');
@@ -151,13 +158,23 @@
           var reader = new FileReader();
           reader.onload = function(){
             scenes[idx].img = reader.result; // data URL avoids CORS
-            // reflect into the text field
-            var inputs = grid.querySelectorAll('input.imgPath[data-idx="'+idx+'"]');
-            if (inputs && inputs[0]) inputs[0].value = file.name + ' (local)';
+            scenes[idx].imgName = file.name;
             // re-render labels
             buildSceneEditors();
           };
           reader.readAsDataURL(file);
+        }
+      });
+
+      // Handle reset to default repo image
+      grid.addEventListener('click', function(e){
+        if (e.target.classList.contains('resetImgBtn')){
+          var idx = +e.target.getAttribute('data-idx');
+          if (scenes[idx] && scenes[idx].defaultImg){
+            scenes[idx].img = scenes[idx].defaultImg;
+            scenes[idx].imgName = null;
+            buildSceneEditors();
+          }
         }
       });
 
