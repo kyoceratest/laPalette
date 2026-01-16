@@ -263,30 +263,20 @@
         ctx.closePath();
       }
 
+      // global static background
+      var staticBgImg = null;
+
       function drawScene(bgImg, avatarImg, text, progress, scene){
         var cw = canvas.width, ch = canvas.height;
         // base fill
         ctx.fillStyle = '#000';
         ctx.fillRect(0,0,cw,ch);
-        if (bgImg){
-          // blurred backdrop (letterbox)
-          ctx.save();
-          ctx.filter = 'blur(16px) brightness(0.8)';
-          var sb = Math.max(cw/bgImg.width, ch/bgImg.height);
-          ctx.drawImage(bgImg, (cw - bgImg.width*sb)/2, (ch - bgImg.height*sb)/2, bgImg.width*sb, bgImg.height*sb);
-          ctx.restore();
-          // foreground contain (no crop) + gentle zoom
-          var sContain = Math.min(cw/bgImg.width, ch/bgImg.height);
-          var zoom = (scene && scene.zoom) ? 1 + 0.03*progress : 1; // slightly softer zoom
-          // avoid upscaling beyond native to keep sharpness
-          var base = Math.min(1, sContain);
-          var s = Math.min(1, base * zoom);
-          ctx.imageSmoothingEnabled = true;
-          ctx.imageSmoothingQuality = 'high';
-          var w = bgImg.width*s, h = bgImg.height*s;
-          var dx = (cw - w)/2, dy = (ch - h)/2;
-          ctx.drawImage(bgImg, dx, dy, w, h);
-        } else if (scene && scene.twoTone){
+        // draw fixed background image if available
+        if (staticBgImg){
+          var sb = Math.max(cw/staticBgImg.width, ch/staticBgImg.height);
+          ctx.drawImage(staticBgImg, (cw - staticBgImg.width*sb)/2, (ch - staticBgImg.height*sb)/2, staticBgImg.width*sb, staticBgImg.height*sb);
+        }
+        if (scene && scene.twoTone){
           // two-tone brand background
           ctx.fillStyle = '#F6F0E6';
           ctx.fillRect(0,0,cw, Math.floor(ch*0.55));
@@ -342,13 +332,22 @@
           // logo optional
           // omitted to avoid cross-origin issues from external hosts; images from same site are fine if needed later
         }
+        // foreground scene image without effects (no blur/zoom)
+        if (bgImg){
+          var sContain = Math.min(cw/bgImg.width, ch/bgImg.height);
+          var s = Math.min(1, sContain); // no upscaling beyond native
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = 'high';
+          var w = bgImg.width*s, h = bgImg.height*s;
+          var dx = (cw - w)/2, dy = (ch - h)/2;
+          ctx.drawImage(bgImg, dx, dy, w, h);
+        }
         // highlight box (optional)
         if (scene && scene.highlight){
           ctx.save();
           ctx.strokeStyle = 'rgba(224,0,26,0.9)';
           ctx.lineWidth = 5;
-          var pulse = 0.6 + 0.4*Math.sin(progress*2*Math.PI);
-          ctx.globalAlpha = pulse;
+          ctx.globalAlpha = 1; // remove pulsing
           ctx.strokeRect(scene.highlight.x, scene.highlight.y, scene.highlight.w, scene.highlight.h);
           ctx.restore();
         }
@@ -376,13 +375,8 @@
           var boxW = widest + 2*padX;
           var boxH = textH + 2*padY;
           var boxX = 40; var boxY = ch - (boxH + 40);
-          // fade in/out for readability over time
+          // constant visibility, no fade
           var fade = 1;
-          if (typeof progress === 'number'){
-            var fin = Math.min(1, progress*3);
-            var fout = Math.min(1, (1-progress)*3);
-            fade = Math.min(fin, fout);
-          }
           // background with rounded corners and subtle gradient
           ctx.save();
           ctx.globalAlpha = 0.85 * fade;
@@ -411,7 +405,7 @@
         }
         // avatar with subtle bob
         if (avatarImg){
-          var bob = Math.sin(progress*2*Math.PI) * 4; // 4px bob
+          var bob = 0; // no bobbing
           drawRoundImage(avatarImg, cw - 40 - 120, ch - (boxH + 40) + 10 + bob, 60);
         }
       }
@@ -477,6 +471,8 @@
         if (useOutro){
           seq.push({ twoTone:true, img:null, title:'Merci', subtitle:"Présenté par Lai Wah TSE – Cœur du ciel • https://kyoceratest.github.io/cdcwebsite/", text:"Nos services: Digital Marketing, Branding & Design, Strategy & Consulting.", bodyText:"Nos services: Digital Marketing, Branding & Design, Strategy & Consulting.", durationSec: 6.0, zoom:false, noVoice:true, noSubtitle:true, noCaption:true, table:{ headers:['MVP','Business','Pro','Maintenance'], rows:[ ['2\u202f500–4\u202f500 €','5\u202f000–9\u202f000 €','10\u202f000–18\u202f000 €','400–600 €/mois'] ] } });
         }
+        // load static background once
+        if (!staticBgImg) { staticBgImg = await loadImage('image/bg.png'); }
         for (var i=0;i<seq.length;i++){
           var s = seq[i];
           var bg = await loadImage(s.img);
