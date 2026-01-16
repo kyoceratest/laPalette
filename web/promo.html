@@ -47,8 +47,8 @@
           </label>
         </div>
         <div>
-          <label><input type="checkbox" id="useIntro" checked /> Inclure intro</label>
-          <label style="margin-left:10px;"><input type="checkbox" id="useOutro" checked /> Inclure outro</label>
+          <label><input type="checkbox" id="useIntro" /> Inclure intro</label>
+          <label style="margin-left:10px;"><input type="checkbox" id="useOutro" /> Inclure outro</label>
         </div>
         <div>
           <button id="previewBtn">Aperçu lecture</button>
@@ -68,15 +68,19 @@
 
   <script>
     (function(){
-      // Default scenes using existing repo images
+      // Default scenes using repo images (intro/outro replaced by static images)
       var scenes = [
+        { img: 'image/intro.png', text: '', durationSec: 3.5, zoom: false, highlight: null, noCaption:true },
+        { img: 'image/intro2.png', text: '', durationSec: 3.5, zoom: false, highlight: null, noCaption:true },
         { img: 'image/client2.png', text: "La cliente explore la boutique La Palette, ajoute des produits et passe sa commande.", durationSec: 3.5, zoom: true, highlight: null },
         { img: 'image/all1.png', text: "L'utilisatrice se connecte à son compte et retrouve immédiatement ses commandes.", durationSec: 3.2, zoom: true, highlight: null },
         { img: 'image/shop2.png', text: "Côté magasin, l'équipe visualise la commande dans la liste et prépare les articles.", durationSec: 3.8, zoom: true, highlight: null },
         { img: 'image/shop3.png', text: "La préparation est finalisée; le statut passe à ‘prêt pour livraison’.", durationSec: 3.2, zoom: true, highlight: null },
         { img: 'image/liver2.png', text: "Le livreur récupère la commande prête et consulte sa tournée.", durationSec: 3.2, zoom: true, highlight: null },
         { img: 'image/liver1.png', text: "Lors de la remise, le QR est scanné et la commande passe au statut ‘Terminée’.", durationSec: 3.2, zoom: true, highlight: null },
-        { img: 'image/all3.png', text: "La cliente accède à son profil, consulte sa facture et peut l'enregistrer ou l'imprimer.", durationSec: 3.2, zoom: false, highlight: null }
+        { img: 'image/all3.png', text: "La cliente accède à son profil, consulte sa facture et peut l'enregistrer ou l'imprimer.", durationSec: 3.2, zoom: false, highlight: null },
+        { img: 'image/Tarif.png', text: '', durationSec: 4.0, zoom: false, highlight: null, noCaption:true },
+        { img: 'image/thanks.png', text: '', durationSec: 3.5, zoom: false, highlight: null, noCaption:true }
       ];
       // keep a reference to default repo images for easy reset
       scenes.forEach(function(s){ s.defaultImg = s.img; });
@@ -374,7 +378,8 @@
           var widest = 0; for (var li=0; li<lines.length; li++){ widest = Math.max(widest, ctx.measureText(lines[li]).width); }
           var boxW = widest + 2*padX;
           var boxH = textH + 2*padY;
-          var boxX = 40; var boxY = ch - (boxH + 40);
+          // center horizontally
+          var boxX = Math.round((cw - boxW) / 2); var boxY = ch - (boxH + 40);
           // constant visibility, no fade
           var fade = 1;
           // background with rounded corners and subtle gradient
@@ -387,7 +392,7 @@
           drawRoundRect(boxX, boxY, boxW, boxH, 16);
           ctx.fill();
           ctx.restore();
-          // text with slight stroke and shadow for clarity
+          // text with slight stroke and shadow for clarity (centered)
           ctx.save();
           ctx.globalAlpha = fade;
           ctx.fillStyle = '#ffffff';
@@ -395,12 +400,14 @@
           ctx.lineWidth = 3;
           ctx.shadowColor = 'rgba(0,0,0,0.4)';
           ctx.shadowBlur = 6;
+          var prevAlign = ctx.textAlign; ctx.textAlign = 'center';
           for (var li2=0; li2<lines.length; li2++){
             var ty = boxY + padY + 8 + li2*lineH;
-            var tx = boxX + padX;
+            var tx = boxX + Math.round(boxW/2);
             ctx.strokeText(lines[li2], tx, ty);
             ctx.fillText(lines[li2], tx, ty);
           }
+          ctx.textAlign = prevAlign;
           ctx.restore();
         }
         // avatar with subtle bob
@@ -459,18 +466,8 @@
         if (playing) return; playing = true;
         var lang = (document.getElementById('voiceLang').value||'fr-FR').trim();
         var fps = 30;
-        // Build sequence with optional intro/outro
-        var seq = [];
-        var useIntro = document.getElementById('useIntro') && document.getElementById('useIntro').checked;
-        var useOutro = document.getElementById('useOutro') && document.getElementById('useOutro').checked;
-        if (useIntro){
-          seq.push({ twoTone:true, img:null, title:'Shop Chain', subtitle:"Application e‑commerce & supply chain en ligne. Améliore l'expérience client et apporte une visibilité claire du flux de vente.", text:"Bienvenue sur Shop Chain. Une application en ligne qui fluidifie la commande, la préparation et la livraison, avec un suivi clair pour les équipes et une expérience client plus sereine.", bodyText:"Bienvenue sur Shop Chain. Une application en ligne qui fluidifie la commande, la préparation et la livraison, avec un suivi clair pour les équipes et une expérience client plus sereine.", durationSec: 4.5, zoom:false, noCaption:true });
-        }
-        // main scenes
-        seq = seq.concat(scenes);
-        if (useOutro){
-          seq.push({ twoTone:true, img:null, title:'Merci', subtitle:"Présenté par Lai Wah TSE – Cœur du ciel • https://kyoceratest.github.io/cdcwebsite/", text:"Nos services: Digital Marketing, Branding & Design, Strategy & Consulting.", bodyText:"Nos services: Digital Marketing, Branding & Design, Strategy & Consulting.", durationSec: 6.0, zoom:false, noVoice:true, noSubtitle:true, noCaption:true, table:{ headers:['MVP','Business','Pro','Maintenance'], rows:[ ['2\u202f500–4\u202f500 €','5\u202f000–9\u202f000 €','10\u202f000–18\u202f000 €','400–600 €/mois'] ] } });
-        }
+        // Build sequence: intro/outro disabled; use image scenes only
+        var seq = scenes.slice();
         // load static background once
         if (!staticBgImg) { staticBgImg = await loadImage('image/bg.png'); }
         for (var i=0;i<seq.length;i++){
