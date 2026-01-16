@@ -234,6 +234,35 @@
         ctx.fillText(line, x, y);
       }
 
+      function wrapLines(text, maxWidth){
+        var words = (text||'').split(' ');
+        var line = '';
+        var lines = [];
+        for (var n=0; n<words.length; n++){
+          var testLine = line + words[n] + ' ';
+          var metrics = ctx.measureText(testLine);
+          if (metrics.width > maxWidth && n>0){
+            lines.push(line.trimEnd());
+            line = words[n] + ' ';
+          } else {
+            line = testLine;
+          }
+        }
+        if (line) lines.push(line.trimEnd());
+        return lines;
+      }
+
+      function drawRoundRect(x, y, w, h, r){
+        var rr = Math.min(r, w/2, h/2);
+        ctx.beginPath();
+        ctx.moveTo(x+rr, y);
+        ctx.arcTo(x+w, y, x+w, y+h, rr);
+        ctx.arcTo(x+w, y+h, x, y+h, rr);
+        ctx.arcTo(x, y+h, x, y, rr);
+        ctx.arcTo(x, y, x+w, y, rr);
+        ctx.closePath();
+      }
+
       function drawScene(bgImg, avatarImg, text, progress, scene){
         var cw = canvas.width, ch = canvas.height;
         // base fill
@@ -334,18 +363,51 @@
           ctx.strokeRect(rx, ry, rw, rh);
           ctx.restore();
         }
-        // caption box (polished) unless disabled
+        // caption box (dynamic, high-contrast) unless disabled
         if (!(scene && scene.noCaption)){
-          ctx.fillStyle = 'rgba(0,0,0,0.45)';
-          var boxH = 140, pad = 24;
-          ctx.fillRect(40, ch - (boxH + 40), cw - 80, boxH);
-          // text
-          ctx.fillStyle = '#fff';
-          ctx.shadowColor = 'rgba(0,0,0,0.4)';
-          ctx.shadowBlur = 4;
+          var padX = 24, padY = 18;
           ctx.font = '26px Montserrat, sans-serif';
-          wrapText(text, 40+pad, ch - (boxH + 40) + pad + 8, Math.min(1200, cw - 80 - 2*pad - 160), 34);
-          ctx.shadowBlur = 0;
+          var maxTextW = Math.min(1200, cw - 80 - 2*padX - 160);
+          var lines = wrapLines(text||'', maxTextW);
+          var lineH = 34;
+          var textH = Math.max(lineH, lines.length * lineH);
+          // compute widest line
+          var widest = 0; for (var li=0; li<lines.length; li++){ widest = Math.max(widest, ctx.measureText(lines[li]).width); }
+          var boxW = widest + 2*padX;
+          var boxH = textH + 2*padY;
+          var boxX = 40; var boxY = ch - (boxH + 40);
+          // fade in/out for readability over time
+          var fade = 1;
+          if (typeof progress === 'number'){
+            var fin = Math.min(1, progress*3);
+            var fout = Math.min(1, (1-progress)*3);
+            fade = Math.min(fin, fout);
+          }
+          // background with rounded corners and subtle gradient
+          ctx.save();
+          ctx.globalAlpha = 0.85 * fade;
+          var grad = ctx.createLinearGradient(boxX, boxY, boxX, boxY+boxH);
+          grad.addColorStop(0, 'rgba(0,0,0,0.75)');
+          grad.addColorStop(1, 'rgba(0,0,0,0.55)');
+          ctx.fillStyle = grad;
+          drawRoundRect(boxX, boxY, boxW, boxH, 16);
+          ctx.fill();
+          ctx.restore();
+          // text with slight stroke and shadow for clarity
+          ctx.save();
+          ctx.globalAlpha = fade;
+          ctx.fillStyle = '#ffffff';
+          ctx.strokeStyle = 'rgba(0,0,0,0.75)';
+          ctx.lineWidth = 3;
+          ctx.shadowColor = 'rgba(0,0,0,0.4)';
+          ctx.shadowBlur = 6;
+          for (var li2=0; li2<lines.length; li2++){
+            var ty = boxY + padY + 8 + li2*lineH;
+            var tx = boxX + padX;
+            ctx.strokeText(lines[li2], tx, ty);
+            ctx.fillText(lines[li2], tx, ty);
+          }
+          ctx.restore();
         }
         // avatar with subtle bob
         if (avatarImg){
